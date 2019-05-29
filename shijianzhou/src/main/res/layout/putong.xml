@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:clocktext="http://schemas.android.com/apk/res/com.example.shijianzhou"
+    xmlns:timepick="http://schemas.android.com/apk/res/com.example.shijianzhou"
+    android:id="@+id/putongroot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/cornerwhite"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="预定普通会议"
+        android:textColor="@android:color/white"
+        android:textSize="50sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:text="会议名称:"
+            android:textColor="@android:color/white"
+            android:textSize="40sp" />
+
+        <EditText
+            android:id="@+id/huiyimingcheng_putong"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="小组研发讨论会议"
+            android:textSize="30sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="30dp"
+            android:text="会议开始时间:"
+            android:textColor="@android:color/white"
+            android:textSize="40sp" />
+
+        <com.example.shijianzhou.DigitalClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="30dp"
+            android:textColor="@android:color/white"
+            android:textSize="40sp"
+            clocktext:clocktexttype="yyyy.M.d E " />
+
+        <com.example.util.SmartTimePick
+            android:id="@+id/timepick_start_putong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="20dp"
+            timepick:stepLength="5"
+            timepick:timeoffset="0" >
+        </com.example.util.SmartTimePick>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="10dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="30dp"
+            android:gravity="center_vertical"
+            android:text="会议结束时间："
+            android:textColor="@android:color/white"
+            android:textSize="40sp" />
+
+        <com.example.shijianzhou.DigitalClock
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textColor="@android:color/white"
+            android:textSize="40sp"
+            clocktext:clocktexttype="yyyy.M.d E " />
+
+        <com.example.util.SmartTimePick
+            android:id="@+id/timepick_end_putong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="20dp"
+            timepick:stepLength="5"
+            timepick:timeoffset="30" >
+        </com.example.util.SmartTimePick>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:text="预定人:"
+            android:textColor="@android:color/white"
+            android:textSize="40sp" />
+
+        <EditText
+            android:id="@+id/yudingren_putong"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="张三"
+            android:textSize="30sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:text="出席人:"
+            android:textColor="@android:color/white"
+            android:textSize="40sp" />
+
+        <EditText
+            android:id="@+id/chuxiren_putong"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="李四、王五"
+            android:textSize="30sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:text="外部人员:"
+            android:textColor="@android:color/white"
+            android:textSize="40sp" />
+
+        <EditText
+            android:id="@+id/waiburenyuan_putong"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="赵六、马七"
+            android:textSize="30sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:text="备注:"
+            android:textColor="@android:color/white"
+            android:textSize="40sp" />
+
+        <EditText
+            android:id="@+id/beizhu_putong"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="app原型展示"
+            android:textSize="30sp" />
+    </LinearLayout>
+
+</LinearLayout>

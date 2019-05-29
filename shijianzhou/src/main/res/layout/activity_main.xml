@@ -1,0 +1,169 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/backgroud"
+    tools:context=".MainActivity" >
+
+    <LinearLayout
+        android:layout_width="2dp"
+        android:layout_height="match_parent"
+        android:layout_alignBottom="@+id/thewhole"
+        android:layout_below="@+id/titleofall"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/white" >
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/titleofall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:drawableRight="@drawable/downarrow"
+        android:text="上海总部第一会议室"
+        android:textColor="@android:color/white"
+        android:textSize="30sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:id="@+id/thewhole"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/titleofall"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+            android:id="@+id/linearincludecalendar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingBottom="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingTop="10dp" >
+
+            <com.example.shijianzhou.Calendar
+                android:id="@+id/calendar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+            </com.example.shijianzhou.Calendar>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="20dp"
+                android:background="@drawable/corner"
+                android:orientation="vertical" >
+
+                <com.example.shijianzhou.DigitalClock
+                    android:id="@+id/digitalclock"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:gravity="center_horizontal"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:id="@+id/huiyititle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:gravity="center_horizontal"
+                    android:text="暂无会议"
+                    android:textColor="@android:color/white"
+                    android:textSize="50sp" />
+
+                <TextView
+                    android:id="@+id/yudingren"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:gravity="left"
+                    android:text="预定人："
+                    android:textColor="@android:color/white"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:id="@+id/chuxiren"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:gravity="left"
+                    android:text="出席人员："
+                    android:textColor="@android:color/white"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:id="@+id/waiburen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:gravity="left"
+                    android:text="外部人员："
+                    android:textColor="@android:color/white"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:id="@+id/beizhu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:gravity="left"
+                    android:text="备注："
+                    android:textColor="@android:color/white"
+                    android:textSize="30sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/timeline"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/kuaisu"
+            android:layout_width="200dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="20dp"
+            android:text="快速预定"
+            android:textSize="30sp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/putong"
+            android:layout_width="200dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="20dp"
+            android:text="普通预定"
+            android:textSize="30sp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/huiyiyuyue"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:text="会议预约"
+            android:textSize="30sp" />
+    </LinearLayout>
+
+    <com.example.shijianzhou.TimeLine
+        android:id="@+id/timeline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="30dp" >
+    </com.example.shijianzhou.TimeLine>
+
+</RelativeLayout>

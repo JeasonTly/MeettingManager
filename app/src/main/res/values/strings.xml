@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">优美兴会议室使用记录</string>
+    <string name="app_name_one">优美兴会议室</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="meetting_item">会议室%1$s:%2$s</string>
+    <string name="meetting_time_picker">%1$s分%2$s秒</string>
+</resources>

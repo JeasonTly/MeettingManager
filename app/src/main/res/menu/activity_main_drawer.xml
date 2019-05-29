@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <item
+        android:title="会议室使用">
+        <menu>
+            <item
+                android:id="@+id/meeting_order"
+                android:icon="@drawable/icon_meeting_order"
+                android:title="会议室使用预约" />
+            <item
+                android:id="@+id/meeting_register"
+                android:icon="@drawable/icon_meeting_register"
+                android:title="会议室使用登记" />
+            <item
+                android:id="@+id/meeting_status"
+                android:icon="@drawable/icon_meeting_status"
+                android:title="会议室使用状态" />
+        </menu>
+    </item>
+
+    <item android:title="会议室维护">
+        <menu>
+            <item
+                android:id="@+id/meeting_mananger"
+                android:icon="@drawable/icon_meeting_mananger"
+                android:title="会议室用品维护" />
+            <item
+                android:id="@+id/meeting_clean"
+                android:icon="@drawable/icon_meetting_clean"
+                android:title="会议室卫生打扫" />
+        </menu>
+    </item>
+
+</menu>

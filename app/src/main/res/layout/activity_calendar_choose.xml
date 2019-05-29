@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".CalendarChooseActivity">
+
+        <com.haibin.calendarview.CalendarLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:calendar_content_view_id="@+id/content_list"
+            app:calendar_show_mode="only_month_view"
+            app:default_status="expand">
+
+            <com.haibin.calendarview.CalendarView
+                android:id="@+id/calendar"
+                android:layout_width="match_parent"
+                android:layout_height="350dp"
+                app:current_day_text_color="#007AFF"
+                app:current_day_lunar_text_color="#007AFF"
+                app:selected_theme_color="#00ff65"
+                app:select_mode="range_mode"
+                app:month_view_show_mode="mode_only_current"
+                app:scheme_text_color="@android:color/holo_red_light"
+                app:scheme_lunar_text_color="@android:color/holo_green_dark"
+                app:scheme_theme_color="@android:color/holo_purple"
+                app:month_view="com.haibin.calendarview.DefaultMonthView"
+                app:week_view="com.haibin.calendarview.DefaultWeekView"
+                app:min_year="2019"
+                app:min_year_day="10"
+                app:min_year_month="5"/>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/content_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            </android.support.v7.widget.RecyclerView>
+        </com.haibin.calendarview.CalendarLayout>
+
+    </LinearLayout>
+</layout>
