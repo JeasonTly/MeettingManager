@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.aorise.companymeeting.adapter.MeettingContentAdapter;
+import com.aorise.companymeeting.base.LogT;
 import com.aorise.companymeeting.base.MeettingContent;
 import com.aorise.companymeeting.base.SpacesItemDecoration;
 import com.aorise.companymeeting.databinding.ActivityCalendarChooseBinding;
@@ -34,6 +36,7 @@ public class CalendarChooseActivity extends AppCompatActivity {
     private List<MeettingContent> meettingContents = new ArrayList<>();
     private MeettingContentAdapter mAdatper;
     private DatabaseHelper databaseHelper;
+    private String RoomName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,16 +45,19 @@ public class CalendarChooseActivity extends AppCompatActivity {
         sp = getSharedPreferences("MeettingList", Context.MODE_PRIVATE);
         databaseHelper = new DatabaseHelper(this);
         mAdatper = new MeettingContentAdapter(this, meettingContents);
+        RoomName = getIntent().getStringExtra("room_name");
+        LogT.d(" RomName is " + RoomName);
         mDataBinding.calendar.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
             @Override
             public void onCalendarOutOfRange(Calendar calendar) {
-
+                LogT.d(" calendar " + calendar.getMonth());
             }
 
             @Override
             public void onCalendarSelect(Calendar calendar, boolean isClick) {
                 Log.d(TAG, " onCalendarSelect " + calendar.getYear() + "年" + calendar.getMonth() + "月" + calendar.getDay() + "日");
                 schemecalendar = calendar;
+                mDataBinding.calendarDate.setText(calendar.getYear() + "年" + calendar.getMonth() + "月");
                 meettingContents = databaseHelper.queryMeetting(appendZero(schemecalendar.getYear()), appendZero(schemecalendar.getMonth()), appendZero(schemecalendar.getDay()));
                 if (meettingContents != null) {
                     mAdatper.refreshData(meettingContents);
@@ -59,6 +65,12 @@ public class CalendarChooseActivity extends AppCompatActivity {
             }
         });
 
+        mDataBinding.calendar.setOnMonthChangeListener(new CalendarView.OnMonthChangeListener() {
+            @Override
+            public void onMonthChange(int year, int month) {
+                mDataBinding.calendarDate.setText(year + "年" + month + "月");
+            }
+        });
         mDataBinding.calendar.setRange(mDataBinding.calendar.getCurYear(),
                 mDataBinding.calendar.getCurMonth(),
                 mDataBinding.calendar.getCurDay(),
@@ -93,6 +105,7 @@ public class CalendarChooseActivity extends AppCompatActivity {
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("select_date", schemecalendar);
                 mIntent.putExtra("select_date", bundle);
+                //mIntent.putExtra("room_name", getIntent().getStringExtra("room_name"));
                 startActivityForResult(mIntent, 2034);
 
                 break;
@@ -111,12 +124,12 @@ public class CalendarChooseActivity extends AppCompatActivity {
                 Calendar mCalendar = (Calendar) bundle.getSerializable("current_date");
                 mDataBinding.calendar.addSchemeDate(mCalendar);
                 MeettingContent meettingContent = new MeettingContent(appendZero(mCalendar.getYear()), appendZero(mCalendar.getMonth()), appendZero(mCalendar.getDay()),
-                        appendZero(data.getIntExtra("start_hour",0)),
-                        appendZero(data.getIntExtra("start_minutes",0)),
-                        appendZero(data.getIntExtra("end_hour",0)),
-                        appendZero(data.getIntExtra("end_minutes",0)));
+                        appendZero(data.getIntExtra("start_hour", 0)),
+                        appendZero(data.getIntExtra("start_minutes", 0)),
+                        appendZero(data.getIntExtra("end_hour", 0)),
+                        appendZero(data.getIntExtra("end_minutes", 0)));
                 meettingContent.setContent(content);
-
+                meettingContent.setRoomName(RoomName);
                 meettingContents.add(meettingContent);
                 Log.d(TAG, " meetting content is " + meettingContent.toString() + "  meettingContents size " + meettingContents.size());
                 databaseHelper.insertMeetting(meettingContent);
@@ -125,6 +138,7 @@ public class CalendarChooseActivity extends AppCompatActivity {
             }
         }
     }
+
     private String appendZero(int time) {
         if (time < 10) {
             return "0" + String.valueOf(time);

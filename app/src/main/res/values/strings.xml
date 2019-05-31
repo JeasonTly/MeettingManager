@@ -7,6 +7,6 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-    <string name="meetting_item">会议室%1$s:%2$s</string>
+    <string name="meetting_item">会议室:%1$s</string>
     <string name="meetting_time_picker">%1$s分%2$s秒</string>
 </resources>

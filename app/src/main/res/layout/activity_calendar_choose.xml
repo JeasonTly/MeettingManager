@@ -32,6 +32,12 @@
                 app:min_year="2019"
                 app:min_year_day="10"
                 app:min_year_month="5"/>
+            <TextView
+                android:id="@+id/calendar_date"
+                android:textSize="18sp"
+                android:text="2019年5月"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/content_list"
                 android:layout_width="match_parent"

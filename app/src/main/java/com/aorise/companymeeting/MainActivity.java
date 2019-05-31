@@ -1,9 +1,8 @@
 package com.aorise.companymeeting;
 
 import android.Manifest;
-import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.os.Build;
@@ -14,21 +13,28 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 
 import com.aorise.companymeeting.adapter.GridRecycleAdapter;
 import com.aorise.companymeeting.adapter.GridRecycleAdapterItemClick;
 import com.aorise.companymeeting.base.MeettingRomItem;
 import com.aorise.companymeeting.base.MeettingRomMode;
-import com.aorise.companymeeting.base.MeettingRomViewModel;
 import com.aorise.companymeeting.databinding.ActivityMainBinding;
+import com.aorise.companymeeting.sqlite.DatabaseHelper;
 import com.hjq.toast.ToastUtils;
 import com.jwenfeng.library.pulltorefresh.BaseRefreshListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -41,6 +47,8 @@ public class MainActivity extends AppCompatActivity
     private static final long EXIT_INTERVAL = 2000L;
     private String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,};
     List<String> mPermissionList = new ArrayList<>();
+    private DatabaseHelper mDatabaseHelper;
+    private GridRecycleAdapter mAdapter;
     private int State;
 
     @Override
@@ -48,6 +56,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        mDatabaseHelper = new DatabaseHelper(this);
+        mList = mDatabaseHelper.getList();
         setSupportActionBar(toolbar);
 
         if (Build.VERSION.SDK_INT > 23) {
@@ -57,7 +67,6 @@ public class MainActivity extends AppCompatActivity
                     mPermissionList.add(permissions[i]);//添加还未授予的权限
                 }
             }
-
             //申请权限
             if (mPermissionList.size() > 0) {//有权限没有通过，需要申请
                 ActivityCompat.requestPermissions(this, permissions, 2040);
@@ -67,14 +76,14 @@ public class MainActivity extends AppCompatActivity
         }
 
         activityMainBinding.appbarMain.contentMain.pltrMeeting.setRefreshListener(this);
-        mList = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
 
-        for (int i = 0; i < 5; i++) {
-            mList.add(new MeettingRomItem("" + i, "奥昇二楼" + i, i * 3, i % 2 == 0));
-        }
+
 
         activityMainBinding.appbarMain.contentMain.meetingList.setLayoutManager(new LinearLayoutManager(this));
+        mAdapter = new GridRecycleAdapter(this, mList, this);
         activityMainBinding.appbarMain.contentMain.meetingList.setAdapter(new GridRecycleAdapter(this, mList, this));
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -83,6 +92,44 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.add_meetting_room:
+                final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
+                new AlertDialog.Builder(this).setTitle("添加会议室")
+                        .setView(content_view)
+                        .setPositiveButton("添加", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                MeettingRomItem meettingRomItem = new MeettingRomItem();
+                                EditText editText = content_view.findViewById(R.id.add_room_name);
+                                meettingRomItem.setName(editText.getText().toString());
+                                meettingRomItem.setStatus(0);
+                                meettingRomItem.setTodo_Count(0);
+                                mDatabaseHelper.insertRoom(meettingRomItem);
+                                mAdapter.addData(meettingRomItem);
+                                //mList.add(meettingRomItem);
+                                dialog.dismiss();
+                            }
+                        }).create().show();
+                break;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
     }
 
     @Override
@@ -134,6 +181,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void refresh() {
+        mAdapter.refreshData(mList);
         activityMainBinding.appbarMain.contentMain.pltrMeeting.finishRefresh();
     }
 
@@ -154,7 +202,8 @@ public class MainActivity extends AppCompatActivity
     public void GridRecycleItemClick(int position) {
         ToastUtils.show("您点击了" + (position + 1));
         Intent mIntent = new Intent();
-        mIntent.setClass(this,CalendarChooseActivity.class);
+        mIntent.putExtra("room_name",mList.get(position).getName());
+        mIntent.setClass(this, CalendarChooseActivity.class);
         startActivity(mIntent);
     }
 }

@@ -55,6 +55,7 @@ public class MeettingContentActivity extends AppCompatActivity {
                         mDataBinding.startTime.getCurrent_minutes(), mDataBinding.endTime.getCurrent_minutes());
             }
         });
+    //    getActionBar().setTitle(getIntent().getStringExtra("room_name"));
     }
 
     private void initCalendar() {
@@ -98,12 +99,12 @@ public class MeettingContentActivity extends AppCompatActivity {
                 ToastUtils.show("该时段已存在会议!请重新选择会议时间!");
                 return;
             }
-            if (TimeAreaUtil.getInstance().isInAnotherTimeArear(start_time, start_min,end_time,end_minutes,
+            if (TimeAreaUtil.getInstance().isInAnotherTimeArea(start_time, start_min,end_time,end_minutes,
                     Integer.valueOf(meettingContent.getStart_hour()),
                     Integer.valueOf(meettingContent.getStart_minutes()),
                     Integer.valueOf(meettingContent.getEnd_hour()),
                     Integer.valueOf(meettingContent.getEnd_minutes()))) {
-                Log.d(TAG, " 此时间段内已有会议");
+                Log.d(TAG, " 此时间段内已有会议!");
                 ToastUtils.show("该时段已存在会议!请重新选择会议时间!");
                 return;
             };

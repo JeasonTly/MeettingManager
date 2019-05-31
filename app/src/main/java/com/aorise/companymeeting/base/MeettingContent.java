@@ -22,7 +22,7 @@ public class MeettingContent extends BaseObservable {
                 '}';
     }
 
-    private long id ;
+    private String room_name ;
 
     private String start_year;
 
@@ -116,12 +116,12 @@ public class MeettingContent extends BaseObservable {
         this.content = content;
     }
 
-    public long getId() {
-        return id;
+    public String getRoomName() {
+        return room_name;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setRoomName(String room_name) {
+        this.room_name = room_name;
     }
 
 }

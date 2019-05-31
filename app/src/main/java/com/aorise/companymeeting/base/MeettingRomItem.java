@@ -7,9 +7,12 @@ package com.aorise.companymeeting.base;
 public class MeettingRomItem {
     private String name;
     private String location;
+    private int status;//0 未使用， 1 使用中，2，待使用
     private int todo_Count;
     private boolean inUse;
+    public MeettingRomItem(){
 
+    }
     public MeettingRomItem(String name, String location, int todo_Count, boolean inUse) {
         this.name = name;
         this.location = location;
@@ -49,4 +52,11 @@ public class MeettingRomItem {
         this.inUse = inUse;
     }
 
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
 }
