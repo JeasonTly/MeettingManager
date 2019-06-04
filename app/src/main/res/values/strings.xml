@@ -8,5 +8,8 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="meetting_item">会议室:%1$s</string>
+    <string name="meetting_item_todo">%1$s会议待处理</string>
+
     <string name="meetting_time_picker">%1$s分%2$s秒</string>
+    <string name="meetting">议</string>
 </resources>

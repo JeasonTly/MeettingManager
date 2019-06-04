@@ -11,7 +11,8 @@ public class MeettingContent extends BaseObservable {
     @Override
     public String toString() {
         return "MeettingContent{" +
-                "start_year='" + start_year + '\'' +
+                "room_name='" + room_name + '\'' +
+                ", start_year='" + start_year + '\'' +
                 ", start_month='" + start_month + '\'' +
                 ", start_day='" + start_day + '\'' +
                 ", start_hour='" + start_hour + '\'' +

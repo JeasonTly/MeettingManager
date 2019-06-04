@@ -1,19 +1,23 @@
 package com.aorise.companymeeting;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.aorise.companymeeting.adapter.MeettingContentAdapter;
 import com.aorise.companymeeting.base.LogT;
@@ -24,15 +28,17 @@ import com.aorise.companymeeting.sqlite.DatabaseHelper;
 
 import com.haibin.calendarview.Calendar;
 import com.haibin.calendarview.CalendarView;
+import com.hjq.toast.ToastUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class CalendarChooseActivity extends AppCompatActivity {
+public class CalendarChooseActivity extends AppCompatActivity implements MeettingContentAdapter.MeettingContentItemDelete {
     private final String TAG = CalendarChooseActivity.class.getName();
     private ActivityCalendarChooseBinding mDataBinding;
     private Calendar schemecalendar;
-    private SharedPreferences sp;
     private List<MeettingContent> meettingContents = new ArrayList<>();
     private MeettingContentAdapter mAdatper;
     private DatabaseHelper databaseHelper;
@@ -42,28 +48,15 @@ public class CalendarChooseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mDataBinding = DataBindingUtil.setContentView(this, R.layout.activity_calendar_choose);
-        sp = getSharedPreferences("MeettingList", Context.MODE_PRIVATE);
         databaseHelper = new DatabaseHelper(this);
-        mAdatper = new MeettingContentAdapter(this, meettingContents);
         RoomName = getIntent().getStringExtra("room_name");
-        LogT.d(" RomName is " + RoomName);
-        mDataBinding.calendar.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
-            @Override
-            public void onCalendarOutOfRange(Calendar calendar) {
-                LogT.d(" calendar " + calendar.getMonth());
-            }
+        init();
+    }
 
-            @Override
-            public void onCalendarSelect(Calendar calendar, boolean isClick) {
-                Log.d(TAG, " onCalendarSelect " + calendar.getYear() + "年" + calendar.getMonth() + "月" + calendar.getDay() + "日");
-                schemecalendar = calendar;
-                mDataBinding.calendarDate.setText(calendar.getYear() + "年" + calendar.getMonth() + "月");
-                meettingContents = databaseHelper.queryMeetting(appendZero(schemecalendar.getYear()), appendZero(schemecalendar.getMonth()), appendZero(schemecalendar.getDay()));
-                if (meettingContents != null) {
-                    mAdatper.refreshData(meettingContents);
-                }
-            }
-        });
+    /**
+     * 初始化日历和列表
+     */
+    private void init(){
 
         mDataBinding.calendar.setOnMonthChangeListener(new CalendarView.OnMonthChangeListener() {
             @Override
@@ -71,18 +64,60 @@ public class CalendarChooseActivity extends AppCompatActivity {
                 mDataBinding.calendarDate.setText(year + "年" + month + "月");
             }
         });
+        mDataBinding.calendar.setSchemeColor(Color.RED, Color.RED, Color.RED);
         mDataBinding.calendar.setRange(mDataBinding.calendar.getCurYear(),
                 mDataBinding.calendar.getCurMonth(),
                 mDataBinding.calendar.getCurDay(),
                 2099, 12, 31);
-        mDataBinding.calendar.setSchemeColor(Color.RED, Color.RED, Color.RED);
+        meettingContents = databaseHelper.queryDayofMeetting(RoomName, mDataBinding.calendar.getSelectedCalendar());
+        schemecalendar = mDataBinding.calendar.getSelectedCalendar();
+
+        mAdatper = new MeettingContentAdapter(this, meettingContents,this);
+        mDataBinding.calendar.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
+            @Override
+            public void onCalendarOutOfRange(Calendar calendar) {
+
+            }
+
+            @Override
+            public void onCalendarSelect(Calendar calendar, boolean isClick) {
+                Log.d(TAG, " onCalendarSelect " + calendar.getYear() + "年" + calendar.getMonth() + "月" + calendar.getDay() + "日");
+                schemecalendar = calendar;
+                mDataBinding.calendarDate.setText(calendar.getYear() + "年" + calendar.getMonth() + "月");
+                meettingContents = databaseHelper.queryDayofMeetting(RoomName, calendar);
+                if (meettingContents != null) {
+                    mAdatper.refreshData(meettingContents);
+                }
+            }
+        });
 
         mDataBinding.contentList.setLayoutManager(new LinearLayoutManager(this));
         mDataBinding.contentList.addItemDecoration(new SpacesItemDecoration(8));
         mDataBinding.contentList.setAdapter(mAdatper);
-
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        signSchemeDate();
     }
 
+    /**
+     * 标记事件日期
+     */
+    private void signSchemeDate(){
+        List<MeettingContent> datas =  new ArrayList<>();
+        datas = databaseHelper.queryAllDayToSignScheme(RoomName);
+        if (datas != null && datas.size() != 0) {
+            Calendar calendar = new Calendar();
+            for (MeettingContent data : datas) {
+                calendar.setYear(Integer.valueOf(data.getStart_year()));
+                calendar.setMonth(Integer.valueOf(data.getStart_month()));
+                calendar.setDay(Integer.valueOf(data.getStart_day()));
+                mDataBinding.calendar.addSchemeDate(calendar);
+            }
+            mDataBinding.calendar.update();
+        }
+    }
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         return super.onPrepareOptionsMenu(menu);
@@ -99,18 +134,23 @@ public class CalendarChooseActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_meetting:
-                Log.d(TAG, " iscurrent day" + schemecalendar.isCurrentDay());
-                Intent mIntent = new Intent();
-                mIntent.setClass(this, MeettingContentActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("select_date", schemecalendar);
-                mIntent.putExtra("select_date", bundle);
-                //mIntent.putExtra("room_name", getIntent().getStringExtra("room_name"));
-                startActivityForResult(mIntent, 2034);
-
+                goTosetMeettingTime();
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 启动会议时间选择
+     */
+    private void goTosetMeettingTime(){
+        Intent mIntent = new Intent();
+        mIntent.setClass(this, MeettingContentActivity.class);//会议时间选择器
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("select_date", schemecalendar);
+        mIntent.putExtra("select_date", bundle);
+        mIntent.putExtra("room_name_", RoomName);
+        startActivityForResult(mIntent, 2034);
     }
 
     @Override
@@ -119,31 +159,62 @@ public class CalendarChooseActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == 2034) {
                 String content = data.getStringExtra("content");
-
                 Bundle bundle = data.getBundleExtra("date");
                 Calendar mCalendar = (Calendar) bundle.getSerializable("current_date");
-                mDataBinding.calendar.addSchemeDate(mCalendar);
+                mDataBinding.calendar.addSchemeDate(mCalendar);//日历控件添加并标记日期
                 MeettingContent meettingContent = new MeettingContent(appendZero(mCalendar.getYear()), appendZero(mCalendar.getMonth()), appendZero(mCalendar.getDay()),
                         appendZero(data.getIntExtra("start_hour", 0)),
                         appendZero(data.getIntExtra("start_minutes", 0)),
                         appendZero(data.getIntExtra("end_hour", 0)),
                         appendZero(data.getIntExtra("end_minutes", 0)));
+
                 meettingContent.setContent(content);
                 meettingContent.setRoomName(RoomName);
-                meettingContents.add(meettingContent);
+
                 Log.d(TAG, " meetting content is " + meettingContent.toString() + "  meettingContents size " + meettingContents.size());
-                databaseHelper.insertMeetting(meettingContent);
-                mAdatper.addData(meettingContent);
-                mDataBinding.calendar.update();
+                databaseHelper.insertMeetting(meettingContent);//插入到数据库中
+                mAdatper.addData(meettingContent);//更新RecyclerView
+                mDataBinding.calendar.update();//日历动态更新显示标记的日期
             }
         }
     }
 
+    /**
+     * 把小于10的时间改为0x
+     * @param time
+     * @return
+     */
     private String appendZero(int time) {
         if (time < 10) {
             return "0" + String.valueOf(time);
         } else {
             return String.valueOf(time);
         }
+    }
+
+    @Override
+    public void onItemLongClick(final MeettingContent content) {
+        View view = LayoutInflater.from(this).inflate(R.layout.delete_warning,null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("警告!")
+                .setView(view)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DatabaseHelper.getInstance(CalendarChooseActivity.this).deleteMeetting(content);
+                        meettingContents = DatabaseHelper.getInstance(CalendarChooseActivity.this).queryDayofMeetting(RoomName,mDataBinding.calendar.getSelectedCalendar());
+                        mAdatper.refreshData(meettingContents);
+                        signSchemeDate();
+                        ToastUtils.show("会议删除成功!");
+                        dialog.dismiss();
+                    }
+                }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).setCancelable(false).create();
+        dialog.show();
+
     }
 }

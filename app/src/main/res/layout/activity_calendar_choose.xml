@@ -3,13 +3,14 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".CalendarChooseActivity">
 
         <com.haibin.calendarview.CalendarLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="400dp"
             android:orientation="vertical"
             app:calendar_content_view_id="@+id/content_list"
             app:calendar_show_mode="only_month_view"
@@ -18,32 +19,33 @@
             <com.haibin.calendarview.CalendarView
                 android:id="@+id/calendar"
                 android:layout_width="match_parent"
-                android:layout_height="350dp"
+                android:layout_height="match_parent"
                 app:current_day_text_color="#007AFF"
                 app:current_day_lunar_text_color="#007AFF"
                 app:selected_theme_color="#00ff65"
                 app:select_mode="range_mode"
                 app:month_view_show_mode="mode_only_current"
+                app:scheme_text="@string/meetting"
                 app:scheme_text_color="@android:color/holo_red_light"
                 app:scheme_lunar_text_color="@android:color/holo_green_dark"
                 app:scheme_theme_color="@android:color/holo_purple"
-                app:month_view="com.haibin.calendarview.DefaultMonthView"
+                app:month_view="com.aorise.companymeeting.view.CustomMonthView"
                 app:week_view="com.haibin.calendarview.DefaultWeekView"
                 app:min_year="2019"
                 app:min_year_day="10"
                 app:min_year_month="5"/>
-            <TextView
-                android:id="@+id/calendar_date"
-                android:textSize="18sp"
-                android:text="2019年5月"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/content_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-            </android.support.v7.widget.RecyclerView>
         </com.haibin.calendarview.CalendarLayout>
-
+        <TextView
+            android:id="@+id/calendar_date"
+            android:textSize="18sp"
+            android:text="2019年5月"
+            android:layout_marginLeft="15dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/content_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </android.support.v7.widget.RecyclerView>
     </LinearLayout>
 </layout>

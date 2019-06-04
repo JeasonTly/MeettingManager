@@ -15,6 +15,8 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.aorise.companymeeting.R;
+import com.aorise.companymeeting.base.LogT;
+import com.hjq.toast.ToastUtils;
 
 
 /**
@@ -22,8 +24,6 @@ import com.aorise.companymeeting.R;
  * Date: 2019/5/21.
  */
 public class TimePicker extends View {
-    private final int START_HOUR_TIME_FLAG = 0;
-    private final int END_HOUR_TIME_FLAG = 1;
 
     private float width;
     private float height;
@@ -31,15 +31,11 @@ public class TimePicker extends View {
     private Paint mSelectedPaint;
     private Paint mTextPaint;
     private Paint mCursorPathPaint;
-    private Paint mCursorEndPathPaint;
-    @ColorInt
-    private int mUnSecletColor;
     @ColorInt
     private int mSecletedColor;
     @ColorInt
     private int mCursorPathColor;
-    @ColorInt
-    private int mCursorEndPathColor;
+
 
     private float mPaintLineWidth;
 
@@ -63,6 +59,7 @@ public class TimePicker extends View {
      * 设置默认的游标时间点;
      */
     private int startTime = 8;
+    private int now = -1;
 
     public TimePicker(Context context) {
         super(context);
@@ -72,9 +69,9 @@ public class TimePicker extends View {
         super(context, attrs);
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.TimePicker);
         mSecletedColor = typedArray.getColor(R.styleable.TimePicker_timePicker_Selected_color, context.getColor(R.color.timePicker_selected));
-        mUnSecletColor = typedArray.getColor(R.styleable.TimePicker_timePicker_Selected_color, context.getColor(R.color.timePicker_unselect));
+        //      mUnSecletColor = typedArray.getColor(R.styleable.TimePicker_timePicker_Selected_color, context.getColor(R.color.timePicker_unselect));
         mCursorPathColor = typedArray.getColor(R.styleable.TimePicker_timePicker_cursor_color, context.getColor(R.color.timePicker_cursor));
-        mCursorEndPathColor = typedArray.getColor(R.styleable.TimePicker_timePicker_cursor_end_color, context.getColor(R.color.timePicker_end_cursor));
+        ///       mCursorEndPathColor = typedArray.getColor(R.styleable.TimePicker_timePicker_cursor_end_color, context.getColor(R.color.timePicker_end_cursor));
         mPaintLineWidth = typedArray.getDimension(R.styleable.TimePicker_timePicker_line_width, getResources().getDimension(R.dimen.timePicker_width));
         initPaint();
     }
@@ -146,9 +143,10 @@ public class TimePicker extends View {
         super.onLayout(changed, left, top, right, bottom);
     }
 
-    public void setTimePickerListener(TimePickerListener listener){
-        this.timePickerListener =  listener;
+    public void setTimePickerListener(TimePickerListener listener) {
+        this.timePickerListener = listener;
     }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
@@ -170,6 +168,17 @@ public class TimePicker extends View {
             case MotionEvent.ACTION_UP:
                 for (int i = 0; i < location_list.length; i++) {
                     if (location_list[i] < cursor_halfX_location && cursor_halfX_location < (location_list[i] + line_location_margin)) {
+                        if (now == -1) {
+                            timePickerListener.onHourSelect(i);
+                        }
+                        if (i < now) {
+                            ToastUtils.show("会议开始时间不可以比现在还早!");
+                            cursor_startX_location = location_list[now];
+                            cursor_NextX_location = location_list[now + 1];
+                            cursor_halfX_location = (cursor_NextX_location - cursor_startX_location) / 2 + cursor_startX_location;
+                            invalidate();
+                            break;
+                        }
                         timePickerListener.onHourSelect(i);
                     }
                 }
@@ -187,6 +196,7 @@ public class TimePicker extends View {
         height = MeasureSpec.getSize(heightMeasureSpec);
         line_location_margin = (float) ((width - margin * 24 - left_padding) / 23);
 
+        LogT.d(" width is " + width);
         location_list = new float[25];
         location_list[0] = left_padding;
         for (int i = 1; i < 25; i++) {
@@ -212,4 +222,7 @@ public class TimePicker extends View {
         invalidate();
     }
 
+    public void setNow(int now) {
+        this.now = now;
+    }
 }

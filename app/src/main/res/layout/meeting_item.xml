@@ -2,46 +2,52 @@
 <layout>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@drawable/base_line"
     android:layout_width="match_parent"
-    android:layout_height="150dp">
+    android:layout_height="wrap_content">
     <ImageButton
         android:id="@+id/meetting_img"
         android:layout_centerHorizontal="true"
         android:focusable="false"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
         android:src="@drawable/icon_meetingrom"/>
     <TextView
-        android:layout_below="@+id/meetting_img"
+        android:layout_toRightOf="@+id/meetting_img"
         android:id="@+id/meetting_name"
+        android:layout_marginLeft="10dp"
         android:name="@string/meetting_item"
+        android:layout_centerVertical="true"
         android:textColor="@color/text_color"
         android:layout_centerHorizontal="true"
         android:textSize="20sp"
         android:layout_marginBottom="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
     <TextView
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:id="@+id/todo_count"
         android:layout_width="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="15dp"
         android:layout_height="wrap_content"
-        android:textColor="#ffffff"
-        android:text="13"
-        android:textSize="18sp"
-        android:background="@android:color/holo_red_light"/>
+        android:textColor="@android:color/holo_red_light"
+        android:textSize="18sp" />
     <TextView
         android:layout_alignParentRight="true"
         android:layout_below="@+id/todo_count"
         android:id="@+id/meet_room_status"
         android:layout_marginTop="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#ffffff"
-        android:text="未使用"
-        android:textSize="18sp"
-        android:background="@android:color/holo_red_light"/>
+        android:textColor="@android:color/holo_red_light"
+        android:textSize="18sp" />
 </RelativeLayout>
 
 </layout>

@@ -64,11 +64,9 @@
         android:id="@+id/end_list_time"
         android:layout_width="wrap_content"
         android:layout_height="18dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="10点30分"
-        app:layout_constraintEnd_toEndOf="@+id/start_list_time"
-        app:layout_constraintStart_toStartOf="@+id/start_list_time"
+        app:layout_constraintStart_toStartOf="@+id/meetting_date"
         app:layout_constraintTop_toBottomOf="@+id/start_list_time" />
 
     <TextView

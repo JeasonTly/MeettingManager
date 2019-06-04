@@ -20,8 +20,6 @@
         <com.aorise.companymeeting.view.TimePickerLinearLayout
             android:id="@+id/start_time"
             android:layout_width="match_parent"
-            android:layout_marginRight="24dp"
-            android:layout_marginLeft="24dp"
             android:layout_height="300dp">
         </com.aorise.companymeeting.view.TimePickerLinearLayout>
     </LinearLayout>
@@ -39,8 +37,6 @@
         <com.aorise.companymeeting.view.TimePickerLinearLayout
             android:id="@+id/end_time"
             android:layout_width="match_parent"
-            android:layout_marginRight="24dp"
-            android:layout_marginLeft="24dp"
             android:layout_height="300dp">
         </com.aorise.companymeeting.view.TimePickerLinearLayout>
     </LinearLayout>
@@ -56,6 +52,7 @@
             android:layout_height="50dp"
             android:text="会议内容:"/>
         <EditText
+            android:layout_marginLeft="20dp"
             android:id="@+id/meetting_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

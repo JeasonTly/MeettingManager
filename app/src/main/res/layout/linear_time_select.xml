@@ -6,12 +6,16 @@
     android:layout_height="300dp">
     <com.aorise.companymeeting.view.TimePicker
         android:id="@+id/hour_pick"
+        android:layout_marginRight="24dp"
+        android:layout_marginLeft="24dp"
         android:layout_width="match_parent"
         android:layout_height="70dp">
     </com.aorise.companymeeting.view.TimePicker>
 
     <com.aorise.companymeeting.view.MinutesView
         android:id="@+id/minuts_pick"
+        android:layout_marginRight="24dp"
+        android:layout_marginLeft="24dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </LinearLayout>

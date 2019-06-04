@@ -38,7 +38,7 @@ public class TimePickerLinearLayout extends LinearLayout implements TimePickerLi
     @Override
     public void onPositionChange(int newPositoin, int oldPosition) {
         current_minutes = newPositoin;
-        Toast.makeText(mContext, "时间是:" + current_hour + ":" + current_minutes, Toast.LENGTH_SHORT).show();
+       // Toast.makeText(mContext, "时间是:" + current_hour + ":" + current_minutes, Toast.LENGTH_SHORT).show();
     }
 
 

@@ -17,10 +17,10 @@ import com.aorise.companymeeting.base.MeettingRomItem;
 import com.aorise.companymeeting.base.TimeAreaUtil;
 import com.aorise.companymeeting.databinding.MeetingItemBinding;
 import com.aorise.companymeeting.sqlite.DatabaseHelper;
+import com.haibin.calendarview.Calendar;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -33,9 +33,6 @@ public class GridRecycleAdapter extends BaseAdapter<MeettingRomItem, GridRecycle
     private LayoutInflater layoutInflater;
     private Context mContext;
     private GridRecycleAdapterItemClick click;
-    private DatabaseHelper mDbHelper;
-    private Date date;
-    private SimpleDateFormat dateFormat;
 
     public GridRecycleAdapter(Context context, List<MeettingRomItem> list, GridRecycleAdapterItemClick itemClick) {
         super(context);
@@ -43,11 +40,7 @@ public class GridRecycleAdapter extends BaseAdapter<MeettingRomItem, GridRecycle
         mList = list;
         this.click = itemClick;
         mContext = context;
-        mDbHelper = new DatabaseHelper(context);
-        date = new Date();
-        dateFormat = new SimpleDateFormat("yyyy:MM:dd-HH:mm");
     }
-
 
     @Override
     public GridRecycleAdapter.BaseViewHolder onCreateVH(ViewGroup parent, int viewType) {
@@ -61,27 +54,24 @@ public class GridRecycleAdapter extends BaseAdapter<MeettingRomItem, GridRecycle
         TextView inuse = (TextView) viewHolder.itemView.findViewById(R.id.meet_room_status);
         TextView name = (TextView) viewHolder.itemView.findViewById(R.id.meetting_name);
         name.setText(mContext.getString(R.string.meetting_item, mList.get(position).getName()));
-        List<MeettingContent> meettingContentList = mDbHelper.queryDayofMeetting(mList.get(position).getName());
-        int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList, dateFormat.format(date));
-        LogT.d(" status is " + status);
-        switch (mList.get(position).getStatus()) {
-            case 0:
-                inuse.setText("未使用");
-                break;
-            case 1:
-                inuse.setText("使用中");
-                break;
-        }
+        todocount.setText(mContext.getString(R.string.meetting_item_todo, String.valueOf(mList.get(position).getTodo_Count())));
+        int status = mList.get(position).getStatus();
+        inuse.setText(status == 1 ? "会议室使用中" : "会议室未使用");
 
-        todocount.setText(String.valueOf(mList.get(position).getTodo_Count()));
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 click.GridRecycleItemClick(position);
             }
         });
+        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                click.GridRecycleItemLongClick(mList.get(position).getName());
+                return true;
+            }
+        });
     }
-
 
     class BaseViewHolder extends RecyclerView.ViewHolder {
 
@@ -89,15 +79,5 @@ public class GridRecycleAdapter extends BaseAdapter<MeettingRomItem, GridRecycle
             super(itemView);
         }
     }
-//
-//    public void reloadList(ArrayList<MeettingRomItem> list) {
-//        this.mList.clear();
-//        this.mList = list;
-//        notifyDataSetChanged();
-//    }
-//
-//    public void insertList(ArrayList<MeettingRomItem> addlist) {
-//        this.mList.addAll(addlist);
-//        notifyDataSetChanged();
-//    }
+
 }

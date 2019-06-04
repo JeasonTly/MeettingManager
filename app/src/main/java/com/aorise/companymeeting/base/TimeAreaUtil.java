@@ -1,5 +1,7 @@
 package com.aorise.companymeeting.base;
 
+import com.haibin.calendarview.Calendar;
+
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -70,16 +72,25 @@ public class TimeAreaUtil {
             Date start_date = dateFormat.parse(start_time, new ParsePosition(0));
             Date end_date = dateFormat.parse(end_time, new ParsePosition(0));
             Date now_date = dateFormat.parse(now, new ParsePosition(0));
-
+            LogT.d(" start_date " + start_date + " end_date " + end_date + " now_date " + now_date);
             if (now_date.before(start_date)) {
+                LogT.d(" now_date.before(start_date) ");
                 status = 0;
             }
-            if(now_date.after(start_date) && now_date.before(end_date)){
-                status = 1;
-            }
 
+            if (now_date.after(start_date) && now_date.before(end_date)) {
+                LogT.d(" now_date.after(start_date) && now_date.before(end_date) ");
+                status = 1;
+                break;
+            }
+            if(now_date.equals(start_date)){
+                LogT.d(" now date.equal meetting start date");
+                status = 1;
+                break;
+            }
+            LogT.d(" now status is " + status);
         }
-        return  status;
+        return status;
     }
 
     private String appendZero(int time) {

@@ -39,6 +39,7 @@ public class MeettingContentActivity extends AppCompatActivity {
      * 当前日期下的会议内容；
      */
     private List<MeettingContent> mCurrentDayMeettingList;
+    private String RoomName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +47,7 @@ public class MeettingContentActivity extends AppCompatActivity {
         mDataBinding = DataBindingUtil.setContentView(this, R.layout.activity_meetting_content);
         /** 设置日历时间*/
         initCalendar();
+        RoomName = getIntent().getStringExtra("room_name_");
         mDb = new DatabaseHelper(this);
         mDataBinding.endTime.getTimePicker().setmCursorPathColor(Color.GREEN);
         mDataBinding.sure.setOnClickListener(new View.OnClickListener() {
@@ -55,7 +57,7 @@ public class MeettingContentActivity extends AppCompatActivity {
                         mDataBinding.startTime.getCurrent_minutes(), mDataBinding.endTime.getCurrent_minutes());
             }
         });
-    //    getActionBar().setTitle(getIntent().getStringExtra("room_name"));
+        //    getActionBar().setTitle(getIntent().getStringExtra("room_name"));
     }
 
     private void initCalendar() {
@@ -69,6 +71,7 @@ public class MeettingContentActivity extends AppCompatActivity {
             int selection = Integer.valueOf(minutes.format(date)) / 5;
             mDataBinding.startTime.getTimePicker().setStartHour(Integer.valueOf(hour.format(date)));
             mDataBinding.startTime.getMinutsPicker().setMinutes(selection);
+            mDataBinding.startTime.getTimePicker().setNow(Integer.valueOf(hour.format(date)));
             mDataBinding.endTime.getTimePicker().setStartHour(23);
             mDataBinding.endTime.getMinutsPicker().setMinutes(0);
         } else {
@@ -91,15 +94,15 @@ public class MeettingContentActivity extends AppCompatActivity {
                 return;
             }
         }
-        mCurrentDayMeettingList = mDb.queryMeetting(appendZero(mSelectCalendar.getYear()), appendZero(mSelectCalendar.getMonth()), appendZero(mSelectCalendar.getDay()));
+        mCurrentDayMeettingList = mDb.queryDayofMeetting(RoomName, mSelectCalendar);
 
         for (MeettingContent meettingContent : mCurrentDayMeettingList) {
             LogT.d(" meettingContent " + meettingContent);
-            if((start_time== Integer.valueOf(meettingContent.getStart_hour())) && (start_min == Integer.valueOf(meettingContent.getStart_minutes()))){
+            if ((start_time == Integer.valueOf(meettingContent.getStart_hour())) && (start_min == Integer.valueOf(meettingContent.getStart_minutes()))) {
                 ToastUtils.show("该时段已存在会议!请重新选择会议时间!");
                 return;
             }
-            if (TimeAreaUtil.getInstance().isInAnotherTimeArea(start_time, start_min,end_time,end_minutes,
+            if (TimeAreaUtil.getInstance().isInAnotherTimeArea(start_time, start_min, end_time, end_minutes,
                     Integer.valueOf(meettingContent.getStart_hour()),
                     Integer.valueOf(meettingContent.getStart_minutes()),
                     Integer.valueOf(meettingContent.getEnd_hour()),
@@ -107,7 +110,8 @@ public class MeettingContentActivity extends AppCompatActivity {
                 Log.d(TAG, " 此时间段内已有会议!");
                 ToastUtils.show("该时段已存在会议!请重新选择会议时间!");
                 return;
-            };
+            }
+            ;
         }
 
         Intent mIntent = new Intent();
@@ -122,6 +126,7 @@ public class MeettingContentActivity extends AppCompatActivity {
         setResult(RESULT_OK, mIntent);
         MeettingContentActivity.this.finish();
     }
+
     private String appendZero(int time) {
         if (time < 10) {
             return "0" + String.valueOf(time);

@@ -62,7 +62,7 @@ public class MinutesView extends View {
     /**
      * 边距
      */
-    private int margin = 40;
+    private int margin = 10;
     private Paint mPaint = null;
 
     /**

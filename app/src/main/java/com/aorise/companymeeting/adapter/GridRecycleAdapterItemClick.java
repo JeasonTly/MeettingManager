@@ -6,4 +6,5 @@ package com.aorise.companymeeting.adapter;
  */
 public interface GridRecycleAdapterItemClick {
     void GridRecycleItemClick(int position);
+    void GridRecycleItemLongClick(String name);
 }
