@@ -10,6 +10,7 @@ import android.view.View;
 
 import com.aorise.companymeeting.base.LogT;
 import com.aorise.companymeeting.base.MeettingContent;
+import com.aorise.companymeeting.base.MeettingInfo;
 import com.aorise.companymeeting.base.TimeAreaUtil;
 import com.aorise.companymeeting.databinding.ActivityMeettingContentBinding;
 import com.aorise.companymeeting.sqlite.DatabaseHelper;
@@ -38,8 +39,9 @@ public class MeettingContentActivity extends AppCompatActivity {
     /**
      * 当前日期下的会议内容；
      */
-    private List<MeettingContent> mCurrentDayMeettingList;
+    private List<MeettingInfo> mCurrentDayMeettingList;
     private String RoomName;
+    private String DepartmentName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +86,8 @@ public class MeettingContentActivity extends AppCompatActivity {
 
     private void determineTime(int start_time, int end_time, int start_min, int end_minutes) {
         LogT.d(" start_time " + start_time + " start_min " + start_min + " end _hour " + end_time + " end min " + end_minutes);
+        String start_time_str = appendZero(start_time)+ ":" +appendZero(start_min);
+        String end_time_str = appendZero(end_time)+ ":" +appendZero(end_minutes);
         if (end_time < start_time) {
             ToastUtils.show("会议结束时间不得小于开始时间!");
             return;
@@ -96,17 +100,13 @@ public class MeettingContentActivity extends AppCompatActivity {
         }
         mCurrentDayMeettingList = mDb.queryDayofMeetting(RoomName, mSelectCalendar);
 
-        for (MeettingContent meettingContent : mCurrentDayMeettingList) {
-            LogT.d(" meettingContent " + meettingContent);
-            if ((start_time == Integer.valueOf(meettingContent.getStart_hour())) && (start_min == Integer.valueOf(meettingContent.getStart_minutes()))) {
+        for (MeettingInfo meettingInfo : mCurrentDayMeettingList) {
+            LogT.d(" meettingContent " + meettingInfo);
+            if ((start_time_str.equals(meettingInfo.getStart_time()))) {
                 ToastUtils.show("该时段已存在会议!请重新选择会议时间!");
                 return;
             }
-            if (TimeAreaUtil.getInstance().isInAnotherTimeArea(start_time, start_min, end_time, end_minutes,
-                    Integer.valueOf(meettingContent.getStart_hour()),
-                    Integer.valueOf(meettingContent.getStart_minutes()),
-                    Integer.valueOf(meettingContent.getEnd_hour()),
-                    Integer.valueOf(meettingContent.getEnd_minutes()))) {
+            if (TimeAreaUtil.getInstance().isInAnotherTimeArea(start_time_str,end_time_str,meettingInfo.getStart_time(),meettingInfo.getEnd_time())){
                 Log.d(TAG, " 此时间段内已有会议!");
                 ToastUtils.show("该时段已存在会议!请重新选择会议时间!");
                 return;

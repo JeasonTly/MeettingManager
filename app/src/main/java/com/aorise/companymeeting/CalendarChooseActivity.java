@@ -22,6 +22,7 @@ import android.view.View;
 import com.aorise.companymeeting.adapter.MeettingContentAdapter;
 import com.aorise.companymeeting.base.LogT;
 import com.aorise.companymeeting.base.MeettingContent;
+import com.aorise.companymeeting.base.MeettingInfo;
 import com.aorise.companymeeting.base.SpacesItemDecoration;
 import com.aorise.companymeeting.databinding.ActivityCalendarChooseBinding;
 import com.aorise.companymeeting.sqlite.DatabaseHelper;
@@ -39,7 +40,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
     private final String TAG = CalendarChooseActivity.class.getName();
     private ActivityCalendarChooseBinding mDataBinding;
     private Calendar schemecalendar;
-    private List<MeettingContent> meettingContents = new ArrayList<>();
+    private List<MeettingInfo> meettingContents = new ArrayList<>();
     private MeettingContentAdapter mAdatper;
     private DatabaseHelper databaseHelper;
     private String RoomName;
@@ -56,7 +57,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
     /**
      * 初始化日历和列表
      */
-    private void init(){
+    private void init() {
 
         mDataBinding.calendar.setOnMonthChangeListener(new CalendarView.OnMonthChangeListener() {
             @Override
@@ -72,7 +73,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
         meettingContents = databaseHelper.queryDayofMeetting(RoomName, mDataBinding.calendar.getSelectedCalendar());
         schemecalendar = mDataBinding.calendar.getSelectedCalendar();
 
-        mAdatper = new MeettingContentAdapter(this, meettingContents,this);
+        mAdatper = new MeettingContentAdapter(this, meettingContents, this);
         mDataBinding.calendar.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
             @Override
             public void onCalendarOutOfRange(Calendar calendar) {
@@ -95,6 +96,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
         mDataBinding.contentList.addItemDecoration(new SpacesItemDecoration(8));
         mDataBinding.contentList.setAdapter(mAdatper);
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -104,20 +106,29 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
     /**
      * 标记事件日期
      */
-    private void signSchemeDate(){
-        List<MeettingContent> datas =  new ArrayList<>();
+    private void signSchemeDate() {
+        List<MeettingInfo> datas = new ArrayList<>();
         datas = databaseHelper.queryAllDayToSignScheme(RoomName);
         if (datas != null && datas.size() != 0) {
-            Calendar calendar = new Calendar();
-            for (MeettingContent data : datas) {
-                calendar.setYear(Integer.valueOf(data.getStart_year()));
-                calendar.setMonth(Integer.valueOf(data.getStart_month()));
-                calendar.setDay(Integer.valueOf(data.getStart_day()));
-                mDataBinding.calendar.addSchemeDate(calendar);
+            for (MeettingInfo data : datas) {
+                mDataBinding.calendar.addSchemeDate(String2Calendar(data.getChooseDate()));
             }
             mDataBinding.calendar.update();
         }
     }
+
+    private Calendar String2Calendar(String chooseDate) {
+        LogT.d("chooseDate " + chooseDate);
+        Calendar calendar = new Calendar();
+        int year = Integer.valueOf(chooseDate.substring(0, 4));
+        int month = Integer.valueOf(chooseDate.substring(5, 7));
+        int day = Integer.valueOf(chooseDate.substring(8, 10));
+        calendar.setYear(year);
+        calendar.setMonth(month);
+        calendar.setDay(day);
+        return calendar;
+    }
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         return super.onPrepareOptionsMenu(menu);
@@ -143,7 +154,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
     /**
      * 启动会议时间选择
      */
-    private void goTosetMeettingTime(){
+    private void goTosetMeettingTime() {
         Intent mIntent = new Intent();
         mIntent.setClass(this, MeettingContentActivity.class);//会议时间选择器
         Bundle bundle = new Bundle();
@@ -162,18 +173,17 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
                 Bundle bundle = data.getBundleExtra("date");
                 Calendar mCalendar = (Calendar) bundle.getSerializable("current_date");
                 mDataBinding.calendar.addSchemeDate(mCalendar);//日历控件添加并标记日期
-                MeettingContent meettingContent = new MeettingContent(appendZero(mCalendar.getYear()), appendZero(mCalendar.getMonth()), appendZero(mCalendar.getDay()),
-                        appendZero(data.getIntExtra("start_hour", 0)),
-                        appendZero(data.getIntExtra("start_minutes", 0)),
-                        appendZero(data.getIntExtra("end_hour", 0)),
-                        appendZero(data.getIntExtra("end_minutes", 0)));
 
-                meettingContent.setContent(content);
-                meettingContent.setRoomName(RoomName);
-
-                Log.d(TAG, " meetting content is " + meettingContent.toString() + "  meettingContents size " + meettingContents.size());
-                databaseHelper.insertMeetting(meettingContent);//插入到数据库中
-                mAdatper.addData(meettingContent);//更新RecyclerView
+                MeettingInfo meettingInfo = new MeettingInfo();
+                meettingInfo.setStart_time(appendZero(data.getIntExtra("start_hour", 0)) + ":" + appendZero(data.getIntExtra("start_minutes", 0)));
+                meettingInfo.setEnd_time(appendZero(data.getIntExtra("end_hour", 0)) + ":" + appendZero(data.getIntExtra("end_minutes", 0)));
+                meettingInfo.setContent(content);
+                meettingInfo.setRoomName(RoomName);
+                meettingInfo.setChooseDate(appendZero(mCalendar.getYear()) + "年" + appendZero(mCalendar.getMonth()) + "月" + appendZero(mCalendar.getDay()) + "日");
+                meettingInfo.setDepartmentInfo("奥昇移动组");
+                Log.d(TAG, " meettingInfo content is " + meettingInfo.toString() + "  meettingInfo size " + meettingContents.size());
+                databaseHelper.insertMeetting(meettingInfo);
+                mAdatper.addData(meettingInfo);//更新RecyclerView
                 mDataBinding.calendar.update();//日历动态更新显示标记的日期
             }
         }
@@ -181,6 +191,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
 
     /**
      * 把小于10的时间改为0x
+     *
      * @param time
      * @return
      */
@@ -193,8 +204,8 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
     }
 
     @Override
-    public void onItemLongClick(final MeettingContent content) {
-        View view = LayoutInflater.from(this).inflate(R.layout.delete_warning,null);
+    public void onItemLongClick(final MeettingInfo content) {
+        View view = LayoutInflater.from(this).inflate(R.layout.delete_warning, null);
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("警告!")
                 .setView(view)
@@ -202,9 +213,10 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         DatabaseHelper.getInstance(CalendarChooseActivity.this).deleteMeetting(content);
-                        meettingContents = DatabaseHelper.getInstance(CalendarChooseActivity.this).queryDayofMeetting(RoomName,mDataBinding.calendar.getSelectedCalendar());
+                        meettingContents = DatabaseHelper.getInstance(CalendarChooseActivity.this).queryDayofMeetting(RoomName, mDataBinding.calendar.getSelectedCalendar());
                         mAdatper.refreshData(meettingContents);
-                        signSchemeDate();
+                       // signSchemeDate();
+                        mDataBinding.calendar.removeSchemeDate(String2Calendar(content.getChooseDate()));
                         ToastUtils.show("会议删除成功!");
                         dialog.dismiss();
                     }

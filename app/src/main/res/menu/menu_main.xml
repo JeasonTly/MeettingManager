@@ -6,4 +6,10 @@
         android:orderInCategory="100"
         android:title="新建会议室"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/add_department"
+        android:orderInCategory="100"
+        android:title="新建部门"
+        android:visible="false"
+        app:showAsAction="always" />
 </menu>

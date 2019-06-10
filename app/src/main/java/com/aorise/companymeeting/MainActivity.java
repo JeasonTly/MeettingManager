@@ -8,12 +8,7 @@ import android.databinding.DataBindingUtil;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,36 +22,43 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.aorise.companymeeting.adapter.GridRecycleAdapter;
-import com.aorise.companymeeting.adapter.GridRecycleAdapterItemClick;
+import com.aorise.companymeeting.adapter.DepartmentRecycleListAdapter;
+import com.aorise.companymeeting.adapter.RoomRecycleListAdapter;
+import com.aorise.companymeeting.adapter.RoomRecycleListAdapterClick;
+import com.aorise.companymeeting.base.DepartmentInfo;
 import com.aorise.companymeeting.base.LogT;
 import com.aorise.companymeeting.base.MeettingContent;
+import com.aorise.companymeeting.base.MeettingInfo;
 import com.aorise.companymeeting.base.MeettingRomItem;
-import com.aorise.companymeeting.base.MeettingRomMode;
+import com.aorise.companymeeting.base.SpacesItemDecoration;
 import com.aorise.companymeeting.base.TimeAreaUtil;
 import com.aorise.companymeeting.databinding.ActivityMainBinding;
 import com.aorise.companymeeting.sqlite.DatabaseHelper;
+import com.haibin.calendarview.DefaultMonthView;
 import com.hjq.toast.ToastUtils;
 import com.jwenfeng.library.pulltorefresh.BaseRefreshListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements BaseRefreshListener, GridRecycleAdapterItemClick {
+        implements BaseRefreshListener, RoomRecycleListAdapterClick {
     private ActivityMainBinding activityMainBinding;
 
     private ArrayList<MeettingRomItem> mList = new ArrayList<>();
+    private ArrayList<DepartmentInfo> mDepartList = new ArrayList<>();
 
     private long[] mHints = new long[2];
     private static final long EXIT_INTERVAL = 2000L;
     private String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,};
     List<String> mPermissionList = new ArrayList<>();
     private DatabaseHelper mDatabaseHelper;
-    private GridRecycleAdapter mAdapter;
+    private RoomRecycleListAdapter mAdapter;
+    private DepartmentRecycleListAdapter mDepartAdapter;
+    private MenuItem menuItem;
+    private boolean isDepartmentMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,59 +84,140 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+
+        /**
+         * 会议室添加
+         */
+
+        mAdapter = new RoomRecycleListAdapter(this, mList, this);
         activityMainBinding.appbarMain.contentMain.pltrMeeting.setRefreshListener(this);
-
         activityMainBinding.appbarMain.contentMain.meetingList.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new GridRecycleAdapter(this, mList, this);
         activityMainBinding.appbarMain.contentMain.meetingList.setAdapter(mAdapter);
+
+        /**
+         * 部门添加
+         */
+
+        mDepartAdapter = new DepartmentRecycleListAdapter(this, mDepartList, this);
+        activityMainBinding.appbarMain.contentMain.dpartmentList.setLayoutManager(new LinearLayoutManager(this));
+        activityMainBinding.appbarMain.contentMain.dpartmentList.addItemDecoration(new SpacesItemDecoration(8));
+        activityMainBinding.appbarMain.contentMain.dpartmentList.setAdapter(mDepartAdapter);
+        activityMainBinding.appbarMain.contentMain.pltrMeetingDepart.setRefreshListener(new BaseRefreshListener() {
+            @Override
+            public void refresh() {
+                activityMainBinding.appbarMain.contentMain.pltrMeetingDepart.finishRefresh();
+
+            }
+
+            @Override
+            public void loadMore() {
+                activityMainBinding.appbarMain.contentMain.pltrMeetingDepart.finishLoadMore();
+            }
+        });
+
+        activityMainBinding.appbarMain.fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isDepartmentMode = !isDepartmentMode;
+                menuItem.setTitle(isDepartmentMode ? "新建部门" : "新建会议室");
+                activityMainBinding.appbarMain.contentMain.pltrMeeting.setVisibility(isDepartmentMode ? View.GONE : View.VISIBLE);
+                activityMainBinding.appbarMain.contentMain.pltrMeetingDepart.setVisibility(isDepartmentMode ? View.VISIBLE : View.GONE);
+                mDepartList = DatabaseHelper.getInstance(MainActivity.this).getDepartList();
+                if (isDepartmentMode) {
+                    mDepartAdapter.refreshData(mDepartList);
+                }
+            }
+        });
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        return super.onPrepareOptionsMenu(menu);
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_meetting_room:
-                final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
-                new AlertDialog.Builder(this).setTitle("添加会议室")
-                        .setView(content_view)
-                        .setPositiveButton("添加", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                MeettingRomItem meettingRomItem = new MeettingRomItem();
-                                EditText editText = content_view.findViewById(R.id.add_room_name);
-                                if (TextUtils.isEmpty(editText.getText().toString())) {
-                                    ToastUtils.show("会议室名称不能为空");
-                                    return;
-                                }
-                                for (MeettingRomItem data : mList) {
-                                    if (data.getName().equals(editText.getText().toString())) {
-                                        ToastUtils.show("会议室名称冲突，请重新输入");
-                                        editText.setText("");
-                                        return;
-                                    }
-                                }
-                                meettingRomItem.setName(editText.getText().toString());
-                                meettingRomItem.setStatus(0);
-                                meettingRomItem.setTodo_Count(0);
-                                mList.add(meettingRomItem);
-                                mDatabaseHelper.insertRoom(meettingRomItem);
-                                mAdapter.refreshData(mList);
-                                dialog.dismiss();
-                            }
-                        }).create().show();
+                if (isDepartmentMode) {
+                    createNewDepartMent();
+                } else {
+                    createNewRoom();
+                }
                 break;
         }
         return true;
+    }
+
+    private void createNewRoom() {
+        final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
+        new AlertDialog.Builder(this).setTitle("添加会议室")
+                .setView(content_view)
+                .setPositiveButton("添加", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MeettingRomItem meettingRomItem = new MeettingRomItem();
+                        EditText editText = content_view.findViewById(R.id.add_room_name);
+                        if (TextUtils.isEmpty(editText.getText().toString())) {
+                            ToastUtils.show("会议室名称不能为空");
+                            return;
+                        }
+                        for (MeettingRomItem data : mList) {
+                            if (data.getName().equals(editText.getText().toString())) {
+                                ToastUtils.show("会议室名称冲突，请重新输入");
+                                editText.setText("");
+                                return;
+                            }
+                        }
+                        meettingRomItem.setName(editText.getText().toString());
+                        meettingRomItem.setStatus(0);
+                        meettingRomItem.setTodo_Count(0);
+                        mList.add(meettingRomItem);
+                        mDatabaseHelper.insertRoom(meettingRomItem);
+                        mAdapter.refreshData(mList);
+                        dialog.dismiss();
+                    }
+                }).create().show();
+    }
+
+    private void createNewDepartMent() {
+        final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
+        TextView textView = content_view.findViewById(R.id.textView3);
+        textView.setText("部门名称:");
+        final EditText editText = content_view.findViewById(R.id.add_room_name);
+        editText.setHint("请输入部门名称");
+        new AlertDialog.Builder(this).setTitle("添加部门")
+                .setView(content_view)
+                .setPositiveButton("添加", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DepartmentInfo departmentInfo = new DepartmentInfo();
+                        if (TextUtils.isEmpty(editText.getText().toString())) {
+                            ToastUtils.show("部门名称不能为空");
+                            return;
+                        }
+                        for (DepartmentInfo data : mDepartList) {
+                            if (data.getName().equals(editText.getText().toString())) {
+                                ToastUtils.show("部门名称冲突，请重新输入");
+                                editText.setText("");
+                                return;
+                            }
+                        }
+                        departmentInfo.setName(editText.getText().toString());
+                        departmentInfo.setStart_time("");
+                        departmentInfo.setEnd_time("");
+                        departmentInfo.setInTheMeetting(false);
+                        departmentInfo.setRoom_name("");
+                        mDepartList.add(departmentInfo);
+                        LogT.d(" mDepartList size is  " + mDepartList.size() + " departmentInfo is " + departmentInfo);
+                        mDatabaseHelper.insertDepartment(departmentInfo);
+                        mDepartAdapter.refreshData(mDepartList);
+                        dialog.dismiss();
+                    }
+                }).create().show();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
+        menuItem = menu.findItem(R.id.add_meetting_room);
         return true;
     }
 
@@ -152,14 +235,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        mDepartList = DatabaseHelper.getInstance(this).getDepartList();
+        if (activityMainBinding.appbarMain.contentMain.pltrMeetingDepart.getVisibility() == View.VISIBLE) {
+            mDepartAdapter.refreshData(mDepartList);
+        }
         mList = mDatabaseHelper.getList();
         if (mList != null) {
             Date date = new Date();
-            SimpleDateFormat sm = new SimpleDateFormat("yyyy:MM:dd-HH:mm");
+            SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
             for (MeettingRomItem data : mList) {
-                List<MeettingContent> meettingContentList = DatabaseHelper.getInstance(this).queryAllDayofMeetting(data.getName());
-                int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList,sm.format(date));
-                LogT.d("RRoomstatus is "+status);
+                List<MeettingInfo> meettingContentList = DatabaseHelper.getInstance(this).queryAllDayofMeetting(data.getName());
+                int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList, sm.format(date));
                 data.setStatus(status);
                 data.setTodo_Count(meettingContentList.size());
             }
@@ -171,14 +257,15 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void refresh() {
         Date date = new Date();
-        SimpleDateFormat sm = new SimpleDateFormat("yyyy:MM:dd-HH:mm");
+        SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
         for (MeettingRomItem data : mList) {
-            List<MeettingContent> meettingContentList = DatabaseHelper.getInstance(this).queryAllDayofMeetting(data.getName());
-            int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList,sm.format(date));
+            List<MeettingInfo> meettingContentList = DatabaseHelper.getInstance(this).queryAllDayofMeetting(data.getName());
+            int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList, sm.format(date));
             data.setStatus(status);
             data.setTodo_Count(meettingContentList.size());
         }
         mAdapter.refreshData(mList);
+
         activityMainBinding.appbarMain.contentMain.pltrMeeting.finishRefresh();
     }
 
@@ -189,15 +276,19 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void GridRecycleItemClick(int position) {
-        Intent mIntent = new Intent();
-        mIntent.putExtra("room_name", mList.get(position).getName());
-        mIntent.setClass(this, CalendarChooseActivity.class);
-        startActivityForResult(mIntent, 2509);
+        if (isDepartmentMode) {
+
+        } else {
+            Intent mIntent = new Intent();
+            mIntent.putExtra("room_name", mList.get(position).getName());
+            mIntent.setClass(this, CalendarChooseActivity.class);
+            startActivityForResult(mIntent, 2509);
+        }
     }
 
     @Override
     public void GridRecycleItemLongClick(final String name) {
-        View view = LayoutInflater.from(this).inflate(R.layout.delete_warning,null);
+        View view = LayoutInflater.from(this).inflate(R.layout.delete_warning, null);
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("警告!")
                 .setView(view)

@@ -21,16 +21,10 @@ public class TimeAreaUtil {
         return INSTANCE;
     }
 
-    public boolean isInAnotherTimeArea(int start_Hour, int start_minutes,
-                                       int end_hour, int end_minutes,
-                                       int particular_start_hour, int particular_start_minuts,
-                                       int particular_end_hour, int particular_end_minuts) {
+
+    public boolean isInAnotherTimeArea(String str_start_time,String str_end_time ,String str_particular_start_time,String str_particular_end_time) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
         /** 时间转为string*/
-        String str_start_time = appendZero(start_Hour) + ":" + appendZero(start_minutes);
-        String str_particular_start_time = appendZero(particular_start_hour) + ":" + appendZero(particular_start_minuts);
-        String str_particular_end_time = appendZero(particular_end_hour) + ":" + appendZero(particular_end_minuts);
-        String str_end_time = appendZero(end_hour) + ":" + appendZero(end_minutes);
 
         Date start_hour_date = simpleDateFormat.parse(str_start_time, new ParsePosition(0));
         Date particular_start_hour_date = simpleDateFormat.parse(str_particular_start_time, new ParsePosition(0));
@@ -60,15 +54,14 @@ public class TimeAreaUtil {
         }
         return false;
     }
-
     //yyyy:MM:dd-HH:mm
-    public int getMeettingRoomStatus(List<MeettingContent> list, String now) {
+    public int getMeettingRoomStatus(List<MeettingInfo> list, String now) {
         int status = 0;
-        for (MeettingContent data : list) {
-            String start_time = data.getStart_year() + ":" + data.getStart_month() + ":" + data.getStart_day() + "-" + data.getStart_hour() + ":" + data.getStart_minutes();
-            String end_time = data.getStart_year() + ":" + data.getStart_month() + ":" + data.getStart_day() + "-" + data.getEnd_hour() + ":" + data.getEnd_minutes();
+        for (MeettingInfo data : list) {
+            String start_time = data.getChooseDate() + data.getStart_time();
+            String end_time = data.getChooseDate() + data.getEnd_time();
             LogT.d(" start_time is " + start_time + " end time is " + end_time);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy:MM:dd-HH:mm");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
             Date start_date = dateFormat.parse(start_time, new ParsePosition(0));
             Date end_date = dateFormat.parse(end_time, new ParsePosition(0));
             Date now_date = dateFormat.parse(now, new ParsePosition(0));
