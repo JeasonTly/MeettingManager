@@ -1,7 +1,5 @@
 package com.aorise.companymeeting.base;
 
-import android.databinding.BaseObservable;
-
 import java.io.Serializable;
 
 /**

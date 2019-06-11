@@ -40,6 +40,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
     private final String TAG = CalendarChooseActivity.class.getName();
     private ActivityCalendarChooseBinding mDataBinding;
     private Calendar schemecalendar;
+    private Calendar currentCalendar;
     private List<MeettingInfo> meettingContents = new ArrayList<>();
     private MeettingContentAdapter mAdatper;
     private DatabaseHelper databaseHelper;
@@ -66,13 +67,12 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
             }
         });
         mDataBinding.calendar.setSchemeColor(Color.RED, Color.RED, Color.RED);
-        mDataBinding.calendar.setRange(mDataBinding.calendar.getCurYear(),
-                mDataBinding.calendar.getCurMonth(),
-                mDataBinding.calendar.getCurDay(),
-                2099, 12, 31);
+
+
         meettingContents = databaseHelper.queryDayofMeetting(RoomName, mDataBinding.calendar.getSelectedCalendar());
         schemecalendar = mDataBinding.calendar.getSelectedCalendar();
-
+        currentCalendar = schemecalendar;
+        LogT.d(" schemecalendar "+schemecalendar.toString());
         mAdatper = new MeettingContentAdapter(this, meettingContents, this);
         mDataBinding.calendar.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
             @Override
@@ -155,6 +155,10 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
      * 启动会议时间选择
      */
     private void goTosetMeettingTime() {
+        if(Integer.valueOf(currentCalendar.toString()) > Integer.valueOf(schemecalendar.toString())){
+            ToastUtils.show("不可以在当前日期前设置会议！");
+            return;
+        }
         Intent mIntent = new Intent();
         mIntent.setClass(this, MeettingContentActivity.class);//会议时间选择器
         Bundle bundle = new Bundle();

@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 
 import com.aorise.companymeeting.base.LogT;
@@ -26,11 +28,13 @@ import java.util.List;
 public class MeettingContentActivity extends AppCompatActivity {
     private final String TAG = "MeettingContentActivity";
     private ActivityMeettingContentBinding mDataBinding;
+
     /**
      * 传入时间区
      */
 
     private Calendar mSelectCalendar;
+
     /**
      * 数据库
      */
@@ -59,7 +63,6 @@ public class MeettingContentActivity extends AppCompatActivity {
                         mDataBinding.startTime.getCurrent_minutes(), mDataBinding.endTime.getCurrent_minutes());
             }
         });
-        //    getActionBar().setTitle(getIntent().getStringExtra("room_name"));
     }
 
     private void initCalendar() {
@@ -133,5 +136,12 @@ public class MeettingContentActivity extends AppCompatActivity {
         } else {
             return String.valueOf(time);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.meetting_depart_choose, menu);
+        return true;
     }
 }

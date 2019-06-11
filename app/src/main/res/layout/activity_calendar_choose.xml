@@ -23,7 +23,7 @@
                 app:current_day_text_color="#007AFF"
                 app:current_day_lunar_text_color="#007AFF"
                 app:selected_theme_color="#00ff65"
-                app:select_mode="range_mode"
+                app:select_mode="default_mode"
                 app:month_view_show_mode="mode_only_current"
                 app:scheme_text="@string/meetting"
                 app:scheme_text_color="@android:color/holo_red_light"
