@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.aorise.companymeeting.R;
 import com.aorise.companymeeting.base.DepartmentInfo;
 import com.aorise.companymeeting.base.LogT;
+import com.aorise.companymeeting.databinding.ListDepartmentItemBinding;
 
 import java.util.List;
 
@@ -18,7 +19,7 @@ import java.util.List;
  * Date: 2019/6/10.
  */
 public class DepartmentRecycleListAdapter extends BaseAdapter<DepartmentInfo, DepartmentRecycleListAdapter.DepartmentVH> {
-
+    private ListDepartmentItemBinding mViewDatabinding;
     private RoomRecycleListAdapterClick mListener;
 
     public DepartmentRecycleListAdapter(Context context, List<DepartmentInfo> list, RoomRecycleListAdapterClick roomRecycleListAdapterClick) {
@@ -29,14 +30,14 @@ public class DepartmentRecycleListAdapter extends BaseAdapter<DepartmentInfo, De
 
     @Override
     public DepartmentVH onCreateVH(ViewGroup parent, int viewType) {
-        return new DepartmentVH(DataBindingUtil.inflate(inflater, R.layout.list_department_item, null, false));
+        mViewDatabinding = DataBindingUtil.inflate(inflater, R.layout.list_department_item, parent, false);///我也没反应过来为什么？
+        return new DepartmentVH(mViewDatabinding);
     }
 
     @Override
     public void onBindVH(DepartmentVH viewHolder, final int position) {
         TextView name = (TextView) viewHolder.itemView.findViewById(R.id.depart_name);
         TextView status = (TextView) viewHolder.itemView.findViewById(R.id.status);
-        LogT.d(" departmentInfo is " + mList.get(position).toString());
         DepartmentInfo departmentInfo =  mList.get(position);
         name.setText(departmentInfo.getName());
         status.setText(departmentInfo.isInTheMeetting() ? "会议中" : "无会议");

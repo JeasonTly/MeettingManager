@@ -1,27 +1,30 @@
 package com.aorise.companymeeting;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 
+import com.aorise.companymeeting.base.DepartmentInfo;
 import com.aorise.companymeeting.base.LogT;
-import com.aorise.companymeeting.base.MeettingContent;
 import com.aorise.companymeeting.base.MeettingInfo;
 import com.aorise.companymeeting.base.TimeAreaUtil;
 import com.aorise.companymeeting.databinding.ActivityMeettingContentBinding;
 import com.aorise.companymeeting.sqlite.DatabaseHelper;
-import com.bigkoo.pickerview.builder.TimePickerBuilder;
-import com.bigkoo.pickerview.listener.OnTimeSelectListener;
 import com.haibin.calendarview.Calendar;
 import com.hjq.toast.ToastUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -45,7 +48,7 @@ public class MeettingContentActivity extends AppCompatActivity {
      */
     private List<MeettingInfo> mCurrentDayMeettingList;
     private String RoomName;
-    private String DepartmentName;
+    private String DepartmentName ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,10 +92,14 @@ public class MeettingContentActivity extends AppCompatActivity {
 
     private void determineTime(int start_time, int end_time, int start_min, int end_minutes) {
         LogT.d(" start_time " + start_time + " start_min " + start_min + " end _hour " + end_time + " end min " + end_minutes);
-        String start_time_str = appendZero(start_time)+ ":" +appendZero(start_min);
-        String end_time_str = appendZero(end_time)+ ":" +appendZero(end_minutes);
+        String start_time_str = appendZero(start_time) + ":" + appendZero(start_min);
+        String end_time_str = appendZero(end_time) + ":" + appendZero(end_minutes);
         if (end_time < start_time) {
             ToastUtils.show("会议结束时间不得小于开始时间!");
+            return;
+        }
+        if(TextUtils.isEmpty(DepartmentName)){
+            ToastUtils.show("必须选择部门！");
             return;
         }
         if (start_time == end_time) {
@@ -109,7 +116,7 @@ public class MeettingContentActivity extends AppCompatActivity {
                 ToastUtils.show("该时段已存在会议!请重新选择会议时间!");
                 return;
             }
-            if (TimeAreaUtil.getInstance().isInAnotherTimeArea(start_time_str,end_time_str,meettingInfo.getStart_time(),meettingInfo.getEnd_time())){
+            if (TimeAreaUtil.getInstance().isInAnotherTimeArea(start_time_str, end_time_str, meettingInfo.getStart_time(), meettingInfo.getEnd_time())) {
                 Log.d(TAG, " 此时间段内已有会议!");
                 ToastUtils.show("该时段已存在会议!请重新选择会议时间!");
                 return;
@@ -126,6 +133,7 @@ public class MeettingContentActivity extends AppCompatActivity {
         mIntent.putExtra("start_minutes", mDataBinding.startTime.getCurrent_minutes());
         mIntent.putExtra("end_hour", mDataBinding.endTime.getCurrent_hour());
         mIntent.putExtra("end_minutes", mDataBinding.endTime.getCurrent_minutes());
+        mIntent.putExtra("depart_name", DepartmentName);
         setResult(RESULT_OK, mIntent);
         MeettingContentActivity.this.finish();
     }
@@ -143,5 +151,38 @@ public class MeettingContentActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.meetting_depart_choose, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.choose_depart:
+                showDepartmentList();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showDepartmentList() {
+
+        List<DepartmentInfo> mDepartmentInfoList = DatabaseHelper.getInstance(this).getDepartList();
+
+        final String[] array = new String[mDepartmentInfoList.size()];
+        for (int i = 0; i < mDepartmentInfoList.size(); i++) {
+            array[i] = mDepartmentInfoList.get(i).getName();
+        }
+
+        LogT.d("list size is " + array.length);
+        AlertDialog alertDialog = new AlertDialog.Builder(this).setTitle("部门选择")
+                .setItems(array, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DepartmentName = array[which];
+                        dialog.dismiss();
+                    }
+                })
+                .setCancelable(false).create();
+        alertDialog.show();
+        LogT.d(" departname is " + DepartmentName);
     }
 }

@@ -12,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -72,7 +73,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
         meettingContents = databaseHelper.queryDayofMeetting(RoomName, mDataBinding.calendar.getSelectedCalendar());
         schemecalendar = mDataBinding.calendar.getSelectedCalendar();
         currentCalendar = schemecalendar;
-        LogT.d(" schemecalendar "+schemecalendar.toString());
+        LogT.d(" schemecalendar " + schemecalendar.toString());
         mAdatper = new MeettingContentAdapter(this, meettingContents, this);
         mDataBinding.calendar.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
             @Override
@@ -155,7 +156,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
      * 启动会议时间选择
      */
     private void goTosetMeettingTime() {
-        if(Integer.valueOf(currentCalendar.toString()) > Integer.valueOf(schemecalendar.toString())){
+        if (Integer.valueOf(currentCalendar.toString()) > Integer.valueOf(schemecalendar.toString())) {
             ToastUtils.show("不可以在当前日期前设置会议！");
             return;
         }
@@ -177,14 +178,14 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
                 Bundle bundle = data.getBundleExtra("date");
                 Calendar mCalendar = (Calendar) bundle.getSerializable("current_date");
                 mDataBinding.calendar.addSchemeDate(mCalendar);//日历控件添加并标记日期
-
+                String depart_name = data.getStringExtra("depart_name");
                 MeettingInfo meettingInfo = new MeettingInfo();
                 meettingInfo.setStart_time(appendZero(data.getIntExtra("start_hour", 0)) + ":" + appendZero(data.getIntExtra("start_minutes", 0)));
                 meettingInfo.setEnd_time(appendZero(data.getIntExtra("end_hour", 0)) + ":" + appendZero(data.getIntExtra("end_minutes", 0)));
                 meettingInfo.setContent(content);
                 meettingInfo.setRoomName(RoomName);
                 meettingInfo.setChooseDate(appendZero(mCalendar.getYear()) + "年" + appendZero(mCalendar.getMonth()) + "月" + appendZero(mCalendar.getDay()) + "日");
-                meettingInfo.setDepartmentInfo("奥昇移动组");
+                meettingInfo.setDepartmentInfo(TextUtils.isEmpty(depart_name) ? "未知部门" : depart_name);
                 Log.d(TAG, " meettingInfo content is " + meettingInfo.toString() + "  meettingInfo size " + meettingContents.size());
                 databaseHelper.insertMeetting(meettingInfo);
                 mAdatper.addData(meettingInfo);//更新RecyclerView
@@ -219,7 +220,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
                         DatabaseHelper.getInstance(CalendarChooseActivity.this).deleteMeetting(content);
                         meettingContents = DatabaseHelper.getInstance(CalendarChooseActivity.this).queryDayofMeetting(RoomName, mDataBinding.calendar.getSelectedCalendar());
                         mAdatper.refreshData(meettingContents);
-                       // signSchemeDate();
+                        // signSchemeDate();
                         mDataBinding.calendar.removeSchemeDate(String2Calendar(content.getChooseDate()));
                         ToastUtils.show("会议删除成功!");
                         dialog.dismiss();
