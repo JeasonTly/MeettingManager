@@ -27,14 +27,12 @@ import com.aorise.companymeeting.adapter.RoomRecycleListAdapter;
 import com.aorise.companymeeting.adapter.RoomRecycleListAdapterClick;
 import com.aorise.companymeeting.base.DepartmentInfo;
 import com.aorise.companymeeting.base.LogT;
-import com.aorise.companymeeting.base.MeettingContent;
 import com.aorise.companymeeting.base.MeettingInfo;
 import com.aorise.companymeeting.base.MeettingRomItem;
 import com.aorise.companymeeting.base.SpacesItemDecoration;
 import com.aorise.companymeeting.base.TimeAreaUtil;
 import com.aorise.companymeeting.databinding.ActivityMainBinding;
 import com.aorise.companymeeting.sqlite.DatabaseHelper;
-import com.haibin.calendarview.DefaultMonthView;
 import com.hjq.toast.ToastUtils;
 import com.jwenfeng.library.pulltorefresh.BaseRefreshListener;
 
@@ -49,11 +47,15 @@ public class MainActivity extends AppCompatActivity
 
     private ArrayList<MeettingRomItem> mList = new ArrayList<>();
     private ArrayList<DepartmentInfo> mDepartList = new ArrayList<>();
-
+    /**
+     * 按键退出
+     */
     private long[] mHints = new long[2];
     private static final long EXIT_INTERVAL = 2000L;
+    /** 权限 */
     private String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,};
     List<String> mPermissionList = new ArrayList<>();
+
     private DatabaseHelper mDatabaseHelper;
     private RoomRecycleListAdapter mAdapter;
     private DepartmentRecycleListAdapter mDepartAdapter;
@@ -105,6 +107,8 @@ public class MainActivity extends AppCompatActivity
         activityMainBinding.appbarMain.contentMain.pltrMeetingDepart.setRefreshListener(new BaseRefreshListener() {
             @Override
             public void refresh() {
+                modifyDepartmentStatus();
+                //  DatabaseHelper.getInstance(MainActivity.this).
                 activityMainBinding.appbarMain.contentMain.pltrMeetingDepart.finishRefresh();
 
             }
@@ -122,9 +126,8 @@ public class MainActivity extends AppCompatActivity
                 menuItem.setTitle(isDepartmentMode ? "新建部门" : "新建会议室");
                 activityMainBinding.appbarMain.contentMain.pltrMeeting.setVisibility(isDepartmentMode ? View.GONE : View.VISIBLE);
                 activityMainBinding.appbarMain.contentMain.pltrMeetingDepart.setVisibility(isDepartmentMode ? View.VISIBLE : View.GONE);
-                mDepartList = DatabaseHelper.getInstance(MainActivity.this).getDepartList();
                 if (isDepartmentMode) {
-                    mDepartAdapter.refreshData(mDepartList);
+                    modifyDepartmentStatus();
                 }
             }
         });
@@ -136,13 +139,29 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.add_meetting_room:
                 if (isDepartmentMode) {
-                    createNewDepartMent();
+                    createNewDepartment();
                 } else {
                     createNewRoom();
                 }
                 break;
         }
         return true;
+    }
+
+    private void modifyDepartmentStatus() {
+         mDepartList = DatabaseHelper.getInstance(this).getDepartList();
+        Date date = new Date();
+        SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
+        LogT.d(" dddddd mDepartList size is " + mDepartList);
+        if (mDepartList != null && mDepartList.size() != 0) {
+            for (DepartmentInfo departmentInfo : mDepartList) {//查询所有的
+                List<MeettingInfo> meettingInfos = DatabaseHelper.getInstance(this).queryDepartmentMeettingListByName(departmentInfo.getName());
+                boolean isInMeeetting = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingInfos, sm.format(date)) == 1;
+                LogT.d(" isInMeetting " + isInMeeetting);
+                departmentInfo.setInTheMeetting(isInMeeetting);
+            }
+        }
+        mDepartAdapter.refreshData(mDepartList);
     }
 
     private void createNewRoom() {
@@ -176,7 +195,7 @@ public class MainActivity extends AppCompatActivity
                 }).create().show();
     }
 
-    private void createNewDepartMent() {
+    private void createNewDepartment() {
         final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
         TextView textView = content_view.findViewById(R.id.textView3);
         textView.setText("部门名称:");
@@ -200,10 +219,9 @@ public class MainActivity extends AppCompatActivity
                             }
                         }
                         departmentInfo.setName(editText.getText().toString());
-                        departmentInfo.setStart_time("");
-                        departmentInfo.setEnd_time("");
                         departmentInfo.setInTheMeetting(false);
                         departmentInfo.setRoom_name("");
+                        departmentInfo.setMeetting_content("");
                         mDepartList.add(departmentInfo);
                         LogT.d(" mDepartList size is  " + mDepartList.size() + " departmentInfo is " + departmentInfo);
                         mDatabaseHelper.insertDepartment(departmentInfo);
@@ -235,23 +253,22 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        mDepartList = DatabaseHelper.getInstance(this).getDepartList();
-        if (activityMainBinding.appbarMain.contentMain.pltrMeetingDepart.getVisibility() == View.VISIBLE) {
-            mDepartAdapter.refreshData(mDepartList);
-        }
-        mList = mDatabaseHelper.getList();
-        if (mList != null) {
-            Date date = new Date();
-            SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
-            for (MeettingRomItem data : mList) {
-                List<MeettingInfo> meettingContentList = DatabaseHelper.getInstance(this).queryAllDayofMeetting(data.getName());
-                int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList, sm.format(date));
-                data.setStatus(status);
-                data.setTodo_Count(meettingContentList.size());
+        if (isDepartmentMode) {
+            modifyDepartmentStatus();
+        } else {
+            mList = mDatabaseHelper.getList();
+            if (mList != null) {
+                Date date = new Date();
+                SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
+                for (MeettingRomItem data : mList) {
+                    List<MeettingInfo> meettingContentList = DatabaseHelper.getInstance(this).queryAllDayofMeetting(data.getName());
+                    int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList, sm.format(date));
+                    data.setStatus(status);
+                    data.setTodo_Count(meettingContentList.size());
+                }
+                mAdapter.refreshData(mList);
             }
-            mAdapter.refreshData(mList);
         }
-
     }
 
     @Override
@@ -288,26 +305,52 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void GridRecycleItemLongClick(final String name) {
-        View view = LayoutInflater.from(this).inflate(R.layout.delete_warning, null);
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("警告!")
-                .setView(view)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        DatabaseHelper.getInstance(MainActivity.this).deleteRoom(name);
-                        mList = DatabaseHelper.getInstance(MainActivity.this).getList();
-                        mAdapter.refreshData(mList);
-                        ToastUtils.show("会议室删除成功,会议室相应的内容亦已删除!");
-                        dialog.dismiss();
-                    }
-                }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                }).setCancelable(false).create();
-        dialog.show();
+
+        if(isDepartmentMode){
+            View view = LayoutInflater.from(this).inflate(R.layout.delete_warning, null);
+            TextView textView = view.findViewById(R.id.delete_content);
+            textView.setText("您确定要删除此部门吗?此部门相关的所有会议也将被删除!请确认!");
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle("警告!")
+                    .setView(view)
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            DatabaseHelper.getInstance(MainActivity.this).deletDepartment(name);
+                            mDepartList = DatabaseHelper.getInstance(MainActivity.this).getDepartList();
+                            mDepartAdapter.refreshData(mDepartList);
+                            ToastUtils.show("部门删除成功,部门会议亦已删除!");
+                            dialog.dismiss();
+                        }
+                    }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).setCancelable(false).create();
+            dialog.show();
+        }else{
+            View view = LayoutInflater.from(this).inflate(R.layout.delete_warning, null);
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle("警告!")
+                    .setView(view)
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            DatabaseHelper.getInstance(MainActivity.this).deleteRoom(name);
+                            mList = DatabaseHelper.getInstance(MainActivity.this).getList();
+                            mAdapter.refreshData(mList);
+                            ToastUtils.show("会议室删除成功,会议室相应的内容亦已删除!");
+                            dialog.dismiss();
+                        }
+                    }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).setCancelable(false).create();
+            dialog.show();
+        }
     }
 
 }

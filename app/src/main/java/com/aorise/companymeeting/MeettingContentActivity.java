@@ -24,7 +24,6 @@ import com.haibin.calendarview.Calendar;
 import com.hjq.toast.ToastUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +47,8 @@ public class MeettingContentActivity extends AppCompatActivity {
      */
     private List<MeettingInfo> mCurrentDayMeettingList;
     private String RoomName;
-    private String DepartmentName ;
+    private String DepartmentName;
+    private MenuItem menuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +98,7 @@ public class MeettingContentActivity extends AppCompatActivity {
             ToastUtils.show("会议结束时间不得小于开始时间!");
             return;
         }
-        if(TextUtils.isEmpty(DepartmentName)){
+        if (TextUtils.isEmpty(DepartmentName)) {
             ToastUtils.show("必须选择部门！");
             return;
         }
@@ -150,7 +150,13 @@ public class MeettingContentActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.meetting_depart_choose, menu);
+        menuItem = menu.findItem(R.id.choose_depart);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -178,6 +184,7 @@ public class MeettingContentActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         DepartmentName = array[which];
+                        menuItem.setTitle("当前部门:" + DepartmentName);
                         dialog.dismiss();
                     }
                 })

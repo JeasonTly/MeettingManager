@@ -3,14 +3,12 @@ package com.aorise.companymeeting.sqlite;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.aorise.companymeeting.base.DepartmentInfo;
 import com.aorise.companymeeting.base.LogT;
-import com.aorise.companymeeting.base.MeettingContent;
 import com.aorise.companymeeting.base.MeettingInfo;
 import com.aorise.companymeeting.base.MeettingRomItem;
 import com.haibin.calendarview.Calendar;
@@ -56,7 +54,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String create_room = "create table if not exists " + TABLE_NAME_ROOM + " (Id integer primary key autoincrement, room_name text, room_status integer, room_event integer)";
 
         String create_department = "create table if not exists " + TABLE_NAME_DEPARTMENT + " (Id integer primary key autoincrement, " +
-                "depart_name text, Start_Time text  ,End_Time text , depart_room_name text, inMeetting integer)";
+                "depart_name text, depart_room_name text, Content text)";
 
         db.execSQL(sql);
         db.execSQL(create_room);
@@ -75,6 +73,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * 添加新的会议的同时，也会在部门表中添加对应的会议内容，
+     *
+     * @param content
+     */
     public void insertMeetting(MeettingInfo content) {
         Log.d("DatabaseHelper", " insertMeetting content is " + content.toString());
         ContentValues contentValues = new ContentValues();
@@ -85,8 +88,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put("DepartMentInfo", content.getDepartmentInfo());
         contentValues.put("chooseDate", content.getChooseDate());
         getWritableDatabase().insert(TABLE_NAME, null, contentValues);
+        LogT.d("然后在部门表中添加会议信息");
     }
 
+    public List<MeettingInfo> queryDepartmentMeettingListByName(String departmentName) {
+        List<MeettingInfo> mDepartInfoList = new ArrayList<>();
+        Cursor cursor = getWritableDatabase().query(TABLE_NAME, null, "DepartMentInfo = ?"
+                , new String[]{departmentName}, null, null, null, null);
+        LogT.d("cursor count is " + cursor.getCount());
+        while (cursor.moveToNext()) {
+            String start_time = cursor.getString(cursor.getColumnIndex("Start_Time"));
+            String end_time = cursor.getString(cursor.getColumnIndex("End_Time"));
+            String content = cursor.getString(cursor.getColumnIndex("MeettingContent"));
+            String room_name = cursor.getString(cursor.getColumnIndex("room_name"));
+            String dInfo = cursor.getString(cursor.getColumnIndex("DepartMentInfo"));
+            String date = cursor.getString(cursor.getColumnIndex("chooseDate"));
+            MeettingInfo meettingInfo = new MeettingInfo();
+            meettingInfo.setStart_time(start_time);
+            meettingInfo.setEnd_time(end_time);
+            meettingInfo.setChooseDate(date);
+            meettingInfo.setRoomName(room_name);
+            meettingInfo.setContent(content);
+            meettingInfo.setDepartmentInfo(dInfo);
+            mDepartInfoList.add(meettingInfo);
+        }
+        LogT.d("And now.This Departments has " + mDepartInfoList.size() + " Meettings");
+        return mDepartInfoList;
+    }
+
+    /**
+     * 查询当前会议室中的某个日期的所有会议
+     *
+     * @param roomName
+     * @param calendar
+     * @return
+     */
     public List<MeettingInfo> queryDayofMeetting(String roomName, Calendar calendar) {
         String year = appendZero(calendar.getYear());
         String month = appendZero(calendar.getMonth());
@@ -219,10 +255,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         LogT.d("departmentInfo is " + departmentInfo);
         ContentValues contentValues = new ContentValues();
         contentValues.put("depart_name", departmentInfo.getName());
-        contentValues.put("Start_Time", departmentInfo.getStart_time());
-        contentValues.put("End_Time", departmentInfo.getEnd_time());
         contentValues.put("depart_room_name", departmentInfo.getRoom_name());
-        contentValues.put("inMeetting", departmentInfo.isInTheMeetting() ? 1 : 0);
+        contentValues.put("Content", departmentInfo.getMeetting_content());
         getWritableDatabase().insert(TABLE_NAME_DEPARTMENT, null, contentValues);
     }
 
@@ -236,6 +270,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void deleteRoom(String roomname) {
         getWritableDatabase().delete(TABLE_NAME_ROOM, "room_name = ?", new String[]{roomname});
         getWritableDatabase().delete(TABLE_NAME, "room_name = ?", new String[]{roomname});
+    }
+
+    /**
+     * 删除部门以及部门所属会议
+     * @param deparmentName
+     */
+    public void deletDepartment(String deparmentName) {
+        getWritableDatabase().delete(TABLE_NAME, "DepartMentInfo = ?", new String[]{deparmentName});
+        getWritableDatabase().delete(TABLE_NAME_DEPARTMENT, "depart_name = ?", new String[]{deparmentName});
     }
 
     public ArrayList<MeettingRomItem> getList() {
@@ -274,16 +317,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             for (int i = 0; i < cursor.getCount(); i++) {
                 DepartmentInfo departmentInfo = new DepartmentInfo();
                 departmentInfo.setName(cursor.getString(cursor.getColumnIndex("depart_name")));
-                departmentInfo.setStart_time(cursor.getString(cursor.getColumnIndex("Start_Time")));
-                departmentInfo.setEnd_time(cursor.getString(cursor.getColumnIndex("End_Time")));
                 departmentInfo.setInTheMeetting(cursor.getInt(cursor.getColumnIndex("depart_name")) == 1);
                 departmentInfo.setRoom_name(cursor.getString(cursor.getColumnIndex("depart_room_name")));
+                departmentInfo.setMeetting_content(cursor.getString(cursor.getColumnIndex("Content")));
                 list.add(departmentInfo);
                 //移动到下一位
                 cursor.moveToNext();
             }
         }
         cursor.close();
+
         LogT.d(" list size is " + list.size());
         return list;
     }
@@ -295,4 +338,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             return String.valueOf(time);
         }
     }
+
 }

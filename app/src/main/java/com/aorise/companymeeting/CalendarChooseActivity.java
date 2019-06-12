@@ -1,13 +1,10 @@
 package com.aorise.companymeeting;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,7 +19,6 @@ import android.view.View;
 
 import com.aorise.companymeeting.adapter.MeettingContentAdapter;
 import com.aorise.companymeeting.base.LogT;
-import com.aorise.companymeeting.base.MeettingContent;
 import com.aorise.companymeeting.base.MeettingInfo;
 import com.aorise.companymeeting.base.SpacesItemDecoration;
 import com.aorise.companymeeting.databinding.ActivityCalendarChooseBinding;
@@ -33,9 +29,7 @@ import com.haibin.calendarview.CalendarView;
 import com.hjq.toast.ToastUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CalendarChooseActivity extends AppCompatActivity implements MeettingContentAdapter.MeettingContentItemDelete {
     private final String TAG = CalendarChooseActivity.class.getName();

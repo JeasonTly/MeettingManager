@@ -1,21 +1,15 @@
 package com.aorise.companymeeting.adapter;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.databinding.DataBindingUtil;
 import android.databinding.ViewDataBinding;
-import android.support.v7.app.AlertDialog;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.aorise.companymeeting.MainActivity;
 import com.aorise.companymeeting.R;
 import com.aorise.companymeeting.base.LogT;
-import com.aorise.companymeeting.base.MeettingContent;
 import com.aorise.companymeeting.base.MeettingInfo;
-import com.aorise.companymeeting.sqlite.DatabaseHelper;
 
 import java.util.List;
 

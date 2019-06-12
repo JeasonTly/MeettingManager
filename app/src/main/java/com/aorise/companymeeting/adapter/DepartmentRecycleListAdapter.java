@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.aorise.companymeeting.R;
 import com.aorise.companymeeting.base.DepartmentInfo;
-import com.aorise.companymeeting.base.LogT;
 import com.aorise.companymeeting.databinding.ListDepartmentItemBinding;
 
 import java.util.List;
@@ -38,9 +37,11 @@ public class DepartmentRecycleListAdapter extends BaseAdapter<DepartmentInfo, De
     public void onBindVH(DepartmentVH viewHolder, final int position) {
         TextView name = (TextView) viewHolder.itemView.findViewById(R.id.depart_name);
         TextView status = (TextView) viewHolder.itemView.findViewById(R.id.status);
+        TextView room_name = (TextView) viewHolder.itemView.findViewById(R.id.room_name);
         DepartmentInfo departmentInfo =  mList.get(position);
         name.setText(departmentInfo.getName());
         status.setText(departmentInfo.isInTheMeetting() ? "会议中" : "无会议");
+        room_name.setText(departmentInfo.getRoom_name());
         viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
