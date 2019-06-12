@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -146,89 +145,6 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
         return true;
-    }
-
-    private void modifyDepartmentStatus() {
-         mDepartList = DatabaseHelper.getInstance(this).getDepartList();
-        Date date = new Date();
-        SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
-        LogT.d(" dddddd mDepartList size is " + mDepartList);
-        if (mDepartList != null && mDepartList.size() != 0) {
-            for (DepartmentInfo departmentInfo : mDepartList) {//查询所有的
-                List<MeettingInfo> meettingInfos = DatabaseHelper.getInstance(this).queryDepartmentMeettingListByName(departmentInfo.getName());
-                boolean isInMeeetting = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingInfos, sm.format(date)) == 1;
-                LogT.d(" isInMeetting " + isInMeeetting);
-                departmentInfo.setInTheMeetting(isInMeeetting);
-            }
-        }
-        mDepartAdapter.refreshData(mDepartList);
-    }
-
-    private void createNewRoom() {
-        final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
-        new AlertDialog.Builder(this).setTitle("添加会议室")
-                .setView(content_view)
-                .setPositiveButton("添加", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        MeettingRomItem meettingRomItem = new MeettingRomItem();
-                        EditText editText = content_view.findViewById(R.id.add_room_name);
-                        if (TextUtils.isEmpty(editText.getText().toString())) {
-                            ToastUtils.show("会议室名称不能为空");
-                            return;
-                        }
-                        for (MeettingRomItem data : mList) {
-                            if (data.getName().equals(editText.getText().toString())) {
-                                ToastUtils.show("会议室名称冲突，请重新输入");
-                                editText.setText("");
-                                return;
-                            }
-                        }
-                        meettingRomItem.setName(editText.getText().toString());
-                        meettingRomItem.setStatus(0);
-                        meettingRomItem.setTodo_Count(0);
-                        mList.add(meettingRomItem);
-                        mDatabaseHelper.insertRoom(meettingRomItem);
-                        mAdapter.refreshData(mList);
-                        dialog.dismiss();
-                    }
-                }).create().show();
-    }
-
-    private void createNewDepartment() {
-        final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
-        TextView textView = content_view.findViewById(R.id.textView3);
-        textView.setText("部门名称:");
-        final EditText editText = content_view.findViewById(R.id.add_room_name);
-        editText.setHint("请输入部门名称");
-        new AlertDialog.Builder(this).setTitle("添加部门")
-                .setView(content_view)
-                .setPositiveButton("添加", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        DepartmentInfo departmentInfo = new DepartmentInfo();
-                        if (TextUtils.isEmpty(editText.getText().toString())) {
-                            ToastUtils.show("部门名称不能为空");
-                            return;
-                        }
-                        for (DepartmentInfo data : mDepartList) {
-                            if (data.getName().equals(editText.getText().toString())) {
-                                ToastUtils.show("部门名称冲突，请重新输入");
-                                editText.setText("");
-                                return;
-                            }
-                        }
-                        departmentInfo.setName(editText.getText().toString());
-                        departmentInfo.setInTheMeetting(false);
-                        departmentInfo.setRoom_name("");
-                        departmentInfo.setMeetting_content("");
-                        mDepartList.add(departmentInfo);
-                        LogT.d(" mDepartList size is  " + mDepartList.size() + " departmentInfo is " + departmentInfo);
-                        mDatabaseHelper.insertDepartment(departmentInfo);
-                        mDepartAdapter.refreshData(mDepartList);
-                        dialog.dismiss();
-                    }
-                }).create().show();
     }
 
     @Override
@@ -351,6 +267,89 @@ public class MainActivity extends AppCompatActivity
                     }).setCancelable(false).create();
             dialog.show();
         }
+    }
+
+    private void modifyDepartmentStatus() {
+        mDepartList = DatabaseHelper.getInstance(this).getDepartList();
+        Date date = new Date();
+        SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
+        LogT.d(" dddddd mDepartList size is " + mDepartList);
+        if (mDepartList != null && mDepartList.size() != 0) {
+            for (DepartmentInfo departmentInfo : mDepartList) {//查询所有的
+                List<MeettingInfo> meettingInfos = DatabaseHelper.getInstance(this).queryDepartmentMeettingListByName(departmentInfo.getName());
+                boolean isInMeeetting = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingInfos, sm.format(date)) == 1;
+                LogT.d(" isInMeetting " + isInMeeetting);
+                departmentInfo.setInTheMeetting(isInMeeetting);
+            }
+        }
+        mDepartAdapter.refreshData(mDepartList);
+    }
+
+    private void createNewRoom() {
+        final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
+        new AlertDialog.Builder(this).setTitle("添加会议室")
+                .setView(content_view)
+                .setPositiveButton("添加", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MeettingRomItem meettingRomItem = new MeettingRomItem();
+                        EditText editText = content_view.findViewById(R.id.add_room_name);
+                        if (TextUtils.isEmpty(editText.getText().toString())) {
+                            ToastUtils.show("会议室名称不能为空");
+                            return;
+                        }
+                        for (MeettingRomItem data : mList) {
+                            if (data.getName().equals(editText.getText().toString())) {
+                                ToastUtils.show("会议室名称冲突，请重新输入");
+                                editText.setText("");
+                                return;
+                            }
+                        }
+                        meettingRomItem.setName(editText.getText().toString());
+                        meettingRomItem.setStatus(0);
+                        meettingRomItem.setTodo_Count(0);
+                        mList.add(meettingRomItem);
+                        mDatabaseHelper.insertRoom(meettingRomItem);
+                        mAdapter.refreshData(mList);
+                        dialog.dismiss();
+                    }
+                }).create().show();
+    }
+
+    private void createNewDepartment() {
+        final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
+        TextView textView = content_view.findViewById(R.id.textView3);
+        textView.setText("部门名称:");
+        final EditText editText = content_view.findViewById(R.id.add_room_name);
+        editText.setHint("请输入部门名称");
+        new AlertDialog.Builder(this).setTitle("添加部门")
+                .setView(content_view)
+                .setPositiveButton("添加", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DepartmentInfo departmentInfo = new DepartmentInfo();
+                        if (TextUtils.isEmpty(editText.getText().toString())) {
+                            ToastUtils.show("部门名称不能为空");
+                            return;
+                        }
+                        for (DepartmentInfo data : mDepartList) {
+                            if (data.getName().equals(editText.getText().toString())) {
+                                ToastUtils.show("部门名称冲突，请重新输入");
+                                editText.setText("");
+                                return;
+                            }
+                        }
+                        departmentInfo.setName(editText.getText().toString());
+                        departmentInfo.setInTheMeetting(false);
+                        departmentInfo.setRoom_name("");
+                        departmentInfo.setMeetting_content("");
+                        mDepartList.add(departmentInfo);
+                        LogT.d(" mDepartList size is  " + mDepartList.size() + " departmentInfo is " + departmentInfo);
+                        mDatabaseHelper.insertDepartment(departmentInfo);
+                        mDepartAdapter.refreshData(mDepartList);
+                        dialog.dismiss();
+                    }
+                }).create().show();
     }
 
 }
