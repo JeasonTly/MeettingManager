@@ -207,6 +207,10 @@ public class MainActivity extends AppCompatActivity
         activityMainBinding.appbarMain.contentMain.pltrMeeting.finishLoadMore();
     }
 
+    /**
+     * 会议室和部门的点击事件!
+     * @param position
+     */
     @Override
     public void GridRecycleItemClick(int position) {
         if (isDepartmentMode) {
@@ -219,6 +223,10 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * 长按删除对应的会议室或者部门
+     * @param name
+     */
     @Override
     public void GridRecycleItemLongClick(final String name) {
 
@@ -269,6 +277,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * 更新会议室状态
+     */
     private void modifyDepartmentStatus() {
         mDepartList = DatabaseHelper.getInstance(this).getDepartList();
         Date date = new Date();
@@ -277,14 +288,22 @@ public class MainActivity extends AppCompatActivity
         if (mDepartList != null && mDepartList.size() != 0) {
             for (DepartmentInfo departmentInfo : mDepartList) {//查询所有的
                 List<MeettingInfo> meettingInfos = DatabaseHelper.getInstance(this).queryDepartmentMeettingListByName(departmentInfo.getName());
+                MeettingInfo meettingInfo = TimeAreaUtil.getInstance().getMeettingInfo(meettingInfos, sm.format(date));
                 boolean isInMeeetting = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingInfos, sm.format(date)) == 1;
+
                 LogT.d(" isInMeetting " + isInMeeetting);
+                if(isInMeeetting){
+                    departmentInfo.setRoom_name(meettingInfo.getRoomName());
+                }
                 departmentInfo.setInTheMeetting(isInMeeetting);
             }
         }
         mDepartAdapter.refreshData(mDepartList);
     }
 
+    /**
+     * 添加新的会议室
+     */
     private void createNewRoom() {
         final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
         new AlertDialog.Builder(this).setTitle("添加会议室")
@@ -316,6 +335,9 @@ public class MainActivity extends AppCompatActivity
                 }).create().show();
     }
 
+    /**
+     * 添加新的部门
+     */
     private void createNewDepartment() {
         final View content_view = LayoutInflater.from(this).inflate(R.layout.add_meetting_dialog, null);
         TextView textView = content_view.findViewById(R.id.textView3);
@@ -341,7 +363,7 @@ public class MainActivity extends AppCompatActivity
                         }
                         departmentInfo.setName(editText.getText().toString());
                         departmentInfo.setInTheMeetting(false);
-                        departmentInfo.setRoom_name("");
+                        departmentInfo.setRoom_name("无");
                         departmentInfo.setMeetting_content("");
                         mDepartList.add(departmentInfo);
                         LogT.d(" mDepartList size is  " + mDepartList.size() + " departmentInfo is " + departmentInfo);

@@ -68,6 +68,7 @@ public class CalendarChooseActivity extends AppCompatActivity implements Meettin
         schemecalendar = mDataBinding.calendar.getSelectedCalendar();
         currentCalendar = schemecalendar;
         LogT.d(" schemecalendar " + schemecalendar.toString());
+        mDataBinding.calendarDate.setText(schemecalendar.getYear() + "年" + schemecalendar.getMonth() + "月");
         mAdatper = new MeettingContentAdapter(this, meettingContents, this);
         mDataBinding.calendar.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
             @Override

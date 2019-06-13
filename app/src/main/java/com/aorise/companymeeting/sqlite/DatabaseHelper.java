@@ -44,7 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
-        dateFormat = new SimpleDateFormat("yyyy年MM月dd日hh:mm");
+        dateFormat = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
     }
 
     @Override
@@ -186,7 +186,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             meettingInfo.setDepartmentInfo(dInfo);
             LogT.d(" queryAllDayofMeetting  " + meettingInfo);
             String time = date + end_time;
+            LogT.d("and now time is " + time);
             Date time_date = dateFormat.parse(time, new ParsePosition(0));
+            LogT.d("and now time_date is " + time_date);
+            LogT.d("and now this.date is " + this.date);
             if (!time_date.before(this.date)) {
                 LogT.d("已经完结的会议时间将不再添加");
                 meettingContentList.add(meettingInfo);
@@ -225,7 +228,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             meettingInfo.setRoomName(room_name);
             meettingInfo.setContent(content);
             meettingInfo.setDepartmentInfo(dInfo);
-            LogT.d(" queryAllDayofMeetting  " + meettingInfo);
+            LogT.d(" queryAllDayToSignScheme  " + meettingInfo);
             meettingContentList.add(meettingInfo);
         }
         cursor.close();
@@ -274,6 +277,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * 删除部门以及部门所属会议
+     *
      * @param deparmentName
      */
     public void deletDepartment(String deparmentName) {
