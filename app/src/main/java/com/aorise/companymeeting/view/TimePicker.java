@@ -179,7 +179,9 @@ public class TimePicker extends View {
                             invalidate();
                             break;
                         }
+
                         timePickerListener.onHourSelect(i);
+                        startTime = i;
                     }
                 }
                 break;

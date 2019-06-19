@@ -49,6 +49,12 @@ public class DepartmentRecycleListAdapter extends BaseAdapter<DepartmentInfo, De
                 return true;
             }
         });
+        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.GridRecycleItemClick(position);
+            }
+        });
     }
 
     class DepartmentVH extends BaseViewHolder {

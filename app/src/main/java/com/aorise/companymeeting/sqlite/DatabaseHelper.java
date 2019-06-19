@@ -88,7 +88,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put("DepartMentInfo", content.getDepartmentInfo());
         contentValues.put("chooseDate", content.getChooseDate());
         getWritableDatabase().insert(TABLE_NAME, null, contentValues);
-        LogT.d("然后在部门表中添加会议信息");
     }
 
     public List<MeettingInfo> queryDepartmentMeettingListByName(String departmentName) {

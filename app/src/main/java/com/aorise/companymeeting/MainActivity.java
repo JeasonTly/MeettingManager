@@ -1,6 +1,7 @@
 package com.aorise.companymeeting;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -8,10 +9,12 @@ import android.databinding.DataBindingUtil;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -19,9 +22,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.aorise.companymeeting.adapter.BaseAdapter;
 import com.aorise.companymeeting.adapter.DepartmentRecycleListAdapter;
 import com.aorise.companymeeting.adapter.RoomRecycleListAdapter;
 import com.aorise.companymeeting.adapter.RoomRecycleListAdapterClick;
@@ -32,6 +37,7 @@ import com.aorise.companymeeting.base.MeettingRomItem;
 import com.aorise.companymeeting.base.SpacesItemDecoration;
 import com.aorise.companymeeting.base.TimeAreaUtil;
 import com.aorise.companymeeting.databinding.ActivityMainBinding;
+import com.aorise.companymeeting.databinding.DialogDepartDetailInfoBinding;
 import com.aorise.companymeeting.sqlite.DatabaseHelper;
 import com.hjq.toast.ToastUtils;
 import com.jwenfeng.library.pulltorefresh.BaseRefreshListener;
@@ -52,13 +58,16 @@ public class MainActivity extends AppCompatActivity
      */
     private long[] mHints = new long[2];
     private static final long EXIT_INTERVAL = 2000L;
-    /** 权限 */
+    /**
+     * 权限
+     */
     private String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,};
     List<String> mPermissionList = new ArrayList<>();
 
     private DatabaseHelper mDatabaseHelper;
     private RoomRecycleListAdapter mAdapter;
     private DepartmentRecycleListAdapter mDepartAdapter;
+    private String depart_dialog_room_name = "";
     private MenuItem menuItem;
     private boolean isDepartmentMode = false;
 
@@ -174,11 +183,9 @@ public class MainActivity extends AppCompatActivity
         } else {
             mList = mDatabaseHelper.getList();
             if (mList != null) {
-                Date date = new Date();
-                SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
                 for (MeettingRomItem data : mList) {
                     List<MeettingInfo> meettingContentList = DatabaseHelper.getInstance(this).queryAllDayofMeetting(data.getName());
-                    int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList, sm.format(date));
+                    int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList);
                     data.setStatus(status);
                     data.setTodo_Count(meettingContentList.size());
                 }
@@ -189,11 +196,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void refresh() {
-        Date date = new Date();
-        SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
+
         for (MeettingRomItem data : mList) {
             List<MeettingInfo> meettingContentList = DatabaseHelper.getInstance(this).queryAllDayofMeetting(data.getName());
-            int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList, sm.format(date));
+            int status = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingContentList);
             data.setStatus(status);
             data.setTodo_Count(meettingContentList.size());
         }
@@ -209,12 +215,13 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * 会议室和部门的点击事件!
+     *
      * @param position
      */
     @Override
     public void GridRecycleItemClick(int position) {
         if (isDepartmentMode) {
-
+            showDepartmentInfo(position);
         } else {
             Intent mIntent = new Intent();
             mIntent.putExtra("room_name", mList.get(position).getName());
@@ -225,12 +232,13 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * 长按删除对应的会议室或者部门
+     *
      * @param name
      */
     @Override
     public void GridRecycleItemLongClick(final String name) {
 
-        if(isDepartmentMode){
+        if (isDepartmentMode) {
             View view = LayoutInflater.from(this).inflate(R.layout.delete_warning, null);
             TextView textView = view.findViewById(R.id.delete_content);
             textView.setText("您确定要删除此部门吗?此部门相关的所有会议也将被删除!请确认!");
@@ -253,7 +261,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     }).setCancelable(false).create();
             dialog.show();
-        }else{
+        } else {
             View view = LayoutInflater.from(this).inflate(R.layout.delete_warning, null);
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setTitle("警告!")
@@ -284,15 +292,15 @@ public class MainActivity extends AppCompatActivity
         mDepartList = DatabaseHelper.getInstance(this).getDepartList();
         Date date = new Date();
         SimpleDateFormat sm = new SimpleDateFormat("yyyy年MM月dd日HH:mm");
-        LogT.d(" dddddd mDepartList size is " + mDepartList);
+
         if (mDepartList != null && mDepartList.size() != 0) {
             for (DepartmentInfo departmentInfo : mDepartList) {//查询所有的
                 List<MeettingInfo> meettingInfos = DatabaseHelper.getInstance(this).queryDepartmentMeettingListByName(departmentInfo.getName());
-                MeettingInfo meettingInfo = TimeAreaUtil.getInstance().getMeettingInfo(meettingInfos, sm.format(date));
-                boolean isInMeeetting = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingInfos, sm.format(date)) == 1;
+                MeettingInfo meettingInfo = TimeAreaUtil.getInstance().getMeettingInfo(meettingInfos);
+                boolean isInMeeetting = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingInfos) == 1;
 
                 LogT.d(" isInMeetting " + isInMeeetting);
-                if(isInMeeetting){
+                if (isInMeeetting) {
                     departmentInfo.setRoom_name(meettingInfo.getRoomName());
                 }
                 departmentInfo.setInTheMeetting(isInMeeetting);
@@ -374,4 +382,87 @@ public class MainActivity extends AppCompatActivity
                 }).create().show();
     }
 
+    /**
+     * 展示部门点击事件
+     *
+     * @param position //点击的部门名称
+     */
+    private void showDepartmentInfo(int position) {
+        DialogDepartDetailInfoBinding mView = DataBindingUtil.inflate(getLayoutInflater(), R.layout.dialog_depart_detail_info, null, false);
+        final List<MeettingInfo> meettingInfos = DatabaseHelper.getInstance(this).queryDepartmentMeettingListByName(mDepartList.get(position).getName());
+        for (MeettingInfo meettingInfo : meettingInfos) {
+            if (!depart_dialog_room_name.contains(meettingInfo.getRoomName())) {
+                if (depart_dialog_room_name.equals("")) {
+                    depart_dialog_room_name = meettingInfo.getRoomName();
+                } else {
+                    depart_dialog_room_name = depart_dialog_room_name + "、" + meettingInfo.getRoomName();
+                }
+            }
+        }
+        LogT.d("and now depart_dialog_room_name is " + depart_dialog_room_name);
+        final MeettingInfo meettingInfo = TimeAreaUtil.getInstance().getMeettingInfo(meettingInfos);
+        boolean isInMeeetting = TimeAreaUtil.getInstance().getMeettingRoomStatus(meettingInfos) == 1;
+        MeettingInfo nextMeetting = TimeAreaUtil.getInstance().getNextMeettingInfo(meettingInfos);
+        mView.departDetailName.setText(mDepartList.get(position).getName());
+        mView.departDetailStatus.setText(isInMeeetting ? "会议中" : "无会议");
+        mView.departDetailRoomList.setText(depart_dialog_room_name);
+        mView.departDetailRoomName.setText(meettingInfo == null ? "无" : meettingInfo.getRoomName());
+        mView.departDetailNextMeetting.setText(nextMeetting == null ? "无" : (nextMeetting.getChooseDate() + nextMeetting.getStart_time()));
+
+        mView.departDetailList.setLayoutManager(new LinearLayoutManager(this));
+        mView.departDetailList.addItemDecoration(new SpacesItemDecoration(4));
+        mView.departDetailList.setAdapter(new departInfoDialogAdapter(this, meettingInfos));
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("部门会议信息")
+                .setView(mView.getRoot())
+                .setPositiveButton("我知道了", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                }).setNegativeButton(null, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).setCancelable(true).create();
+        dialog.show();
+    }
+
+    private class departInfoDialogVH extends RecyclerView.ViewHolder {
+
+        public departInfoDialogVH(@NonNull View itemView) {
+            super(itemView);
+        }
+    }
+
+    private class departInfoDialogAdapter extends RecyclerView.Adapter<departInfoDialogVH> {
+        private List<MeettingInfo> mList;
+        private Context mContext;
+
+        public departInfoDialogAdapter(Context context, List<MeettingInfo> meettingInfos) {
+            mList = meettingInfos;
+            mContext = context;
+        }
+
+        @NonNull
+        @Override
+        public departInfoDialogVH onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            TextView textView = new TextView(mContext);
+            return new departInfoDialogVH(textView);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull departInfoDialogVH departInfoDialogVH, int i) {
+            TextView textView = (TextView) departInfoDialogVH.itemView;
+            textView.setText("会议信息:" + mList.get(i).getRoomName() + " " + mList.get(i).getChooseDate() + mList.get(i).getStart_time());
+            LogT.d("获取到的内容是 " + textView.getText());
+        }
+
+        @Override
+        public int getItemCount() {
+            LogT.d("dddddd " + mList.size());
+            return mList.size();
+        }
+    }
 }
