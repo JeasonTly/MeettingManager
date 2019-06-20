@@ -104,7 +104,6 @@ public class TimePicker extends View {
         mCursorPathPaint.setAntiAlias(true);
         mCursorPathPaint.setStrokeWidth(3f);
 
-
     }
 
     @Override
@@ -171,6 +170,7 @@ public class TimePicker extends View {
                         if (now == -1) {
                             timePickerListener.onHourSelect(i);
                         }
+
                         if (i < now) {
                             ToastUtils.show("会议开始时间不可以比现在还早!");
                             cursor_startX_location = location_list[now];
@@ -203,7 +203,7 @@ public class TimePicker extends View {
         location_list[0] = left_padding;
         for (int i = 1; i < 25; i++) {
             location_list[i] = line_location_margin * i;
-            Log.d("TimePicker", " location list " + location_list[i]);
+//            Log.d("TimePicker", " location list " + location_list[i]);
         }
         //初始化开始时间设置为 8点
         cursor_startX_location = location_list[startTime];

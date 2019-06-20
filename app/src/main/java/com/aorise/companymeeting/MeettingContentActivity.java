@@ -177,7 +177,10 @@ public class MeettingContentActivity extends AppCompatActivity {
         for (int i = 0; i < mDepartmentInfoList.size(); i++) {
             array[i] = mDepartmentInfoList.get(i).getName();
         }
-
+        if(array.length == 0){
+            ToastUtils.show("您还没有创建部门!");
+            return;
+        }
         LogT.d("list size is " + array.length);
         AlertDialog alertDialog = new AlertDialog.Builder(this).setTitle("部门选择")
                 .setItems(array, new DialogInterface.OnClickListener() {
@@ -188,7 +191,7 @@ public class MeettingContentActivity extends AppCompatActivity {
                         dialog.dismiss();
                     }
                 })
-                .setCancelable(false).create();
+                .setCancelable(true).create();
         alertDialog.show();
         LogT.d(" departname is " + DepartmentName);
     }
